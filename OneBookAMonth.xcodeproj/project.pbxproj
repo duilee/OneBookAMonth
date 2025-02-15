@@ -1,0 +1,580 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		765A4FBE2D60D0D200F94BDF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 765A4FA12D60D0D100F94BDF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 765A4FA82D60D0D100F94BDF;
+			remoteInfo = OneBookAMonth;
+		};
+		765A4FC82D60D0D200F94BDF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 765A4FA12D60D0D100F94BDF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 765A4FA82D60D0D100F94BDF;
+			remoteInfo = OneBookAMonth;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		765A4FA92D60D0D100F94BDF /* OneBookAMonth.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OneBookAMonth.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		765A4FBD2D60D0D200F94BDF /* OneBookAMonthTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OneBookAMonthTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		765A4FC72D60D0D200F94BDF /* OneBookAMonthUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OneBookAMonthUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		765A4FCF2D60D0D200F94BDF /* Exceptions for "OneBookAMonth" folder in "OneBookAMonth" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 765A4FA82D60D0D100F94BDF /* OneBookAMonth */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		765A4FAB2D60D0D100F94BDF /* OneBookAMonth */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				765A4FCF2D60D0D200F94BDF /* Exceptions for "OneBookAMonth" folder in "OneBookAMonth" target */,
+			);
+			path = OneBookAMonth;
+			sourceTree = "<group>";
+		};
+		765A4FC02D60D0D200F94BDF /* OneBookAMonthTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = OneBookAMonthTests;
+			sourceTree = "<group>";
+		};
+		765A4FCA2D60D0D200F94BDF /* OneBookAMonthUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = OneBookAMonthUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		765A4FA62D60D0D100F94BDF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		765A4FBA2D60D0D200F94BDF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		765A4FC42D60D0D200F94BDF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		765A4FA02D60D0D100F94BDF = {
+			isa = PBXGroup;
+			children = (
+				765A4FAB2D60D0D100F94BDF /* OneBookAMonth */,
+				765A4FC02D60D0D200F94BDF /* OneBookAMonthTests */,
+				765A4FCA2D60D0D200F94BDF /* OneBookAMonthUITests */,
+				765A4FAA2D60D0D100F94BDF /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		765A4FAA2D60D0D100F94BDF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				765A4FA92D60D0D100F94BDF /* OneBookAMonth.app */,
+				765A4FBD2D60D0D200F94BDF /* OneBookAMonthTests.xctest */,
+				765A4FC72D60D0D200F94BDF /* OneBookAMonthUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		765A4FA82D60D0D100F94BDF /* OneBookAMonth */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 765A4FD02D60D0D200F94BDF /* Build configuration list for PBXNativeTarget "OneBookAMonth" */;
+			buildPhases = (
+				765A4FA52D60D0D100F94BDF /* Sources */,
+				765A4FA62D60D0D100F94BDF /* Frameworks */,
+				765A4FA72D60D0D100F94BDF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				765A4FAB2D60D0D100F94BDF /* OneBookAMonth */,
+			);
+			name = OneBookAMonth;
+			packageProductDependencies = (
+			);
+			productName = OneBookAMonth;
+			productReference = 765A4FA92D60D0D100F94BDF /* OneBookAMonth.app */;
+			productType = "com.apple.product-type.application";
+		};
+		765A4FBC2D60D0D200F94BDF /* OneBookAMonthTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 765A4FD52D60D0D200F94BDF /* Build configuration list for PBXNativeTarget "OneBookAMonthTests" */;
+			buildPhases = (
+				765A4FB92D60D0D200F94BDF /* Sources */,
+				765A4FBA2D60D0D200F94BDF /* Frameworks */,
+				765A4FBB2D60D0D200F94BDF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				765A4FBF2D60D0D200F94BDF /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				765A4FC02D60D0D200F94BDF /* OneBookAMonthTests */,
+			);
+			name = OneBookAMonthTests;
+			packageProductDependencies = (
+			);
+			productName = OneBookAMonthTests;
+			productReference = 765A4FBD2D60D0D200F94BDF /* OneBookAMonthTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		765A4FC62D60D0D200F94BDF /* OneBookAMonthUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 765A4FD82D60D0D200F94BDF /* Build configuration list for PBXNativeTarget "OneBookAMonthUITests" */;
+			buildPhases = (
+				765A4FC32D60D0D200F94BDF /* Sources */,
+				765A4FC42D60D0D200F94BDF /* Frameworks */,
+				765A4FC52D60D0D200F94BDF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				765A4FC92D60D0D200F94BDF /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				765A4FCA2D60D0D200F94BDF /* OneBookAMonthUITests */,
+			);
+			name = OneBookAMonthUITests;
+			packageProductDependencies = (
+			);
+			productName = OneBookAMonthUITests;
+			productReference = 765A4FC72D60D0D200F94BDF /* OneBookAMonthUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		765A4FA12D60D0D100F94BDF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1610;
+				LastUpgradeCheck = 1610;
+				TargetAttributes = {
+					765A4FA82D60D0D100F94BDF = {
+						CreatedOnToolsVersion = 16.1;
+					};
+					765A4FBC2D60D0D200F94BDF = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = 765A4FA82D60D0D100F94BDF;
+					};
+					765A4FC62D60D0D200F94BDF = {
+						CreatedOnToolsVersion = 16.1;
+						TestTargetID = 765A4FA82D60D0D100F94BDF;
+					};
+				};
+			};
+			buildConfigurationList = 765A4FA42D60D0D100F94BDF /* Build configuration list for PBXProject "OneBookAMonth" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 765A4FA02D60D0D100F94BDF;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 765A4FAA2D60D0D100F94BDF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				765A4FA82D60D0D100F94BDF /* OneBookAMonth */,
+				765A4FBC2D60D0D200F94BDF /* OneBookAMonthTests */,
+				765A4FC62D60D0D200F94BDF /* OneBookAMonthUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		765A4FA72D60D0D100F94BDF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		765A4FBB2D60D0D200F94BDF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		765A4FC52D60D0D200F94BDF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		765A4FA52D60D0D100F94BDF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		765A4FB92D60D0D200F94BDF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		765A4FC32D60D0D200F94BDF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		765A4FBF2D60D0D200F94BDF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 765A4FA82D60D0D100F94BDF /* OneBookAMonth */;
+			targetProxy = 765A4FBE2D60D0D200F94BDF /* PBXContainerItemProxy */;
+		};
+		765A4FC92D60D0D200F94BDF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 765A4FA82D60D0D100F94BDF /* OneBookAMonth */;
+			targetProxy = 765A4FC82D60D0D200F94BDF /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		765A4FD12D60D0D200F94BDF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = OneBookAMonth/OneBookAMonth.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"OneBookAMonth/Preview Content\"";
+				DEVELOPMENT_TEAM = RM7YJHGUFJ;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OneBookAMonth/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.duilee.OneBookAMonth;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		765A4FD22D60D0D200F94BDF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = OneBookAMonth/OneBookAMonth.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"OneBookAMonth/Preview Content\"";
+				DEVELOPMENT_TEAM = RM7YJHGUFJ;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = OneBookAMonth/Info.plist;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.duilee.OneBookAMonth;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		765A4FD32D60D0D200F94BDF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		765A4FD42D60D0D200F94BDF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		765A4FD62D60D0D200F94BDF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RM7YJHGUFJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.duilee.OneBookAMonthTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OneBookAMonth.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OneBookAMonth";
+			};
+			name = Debug;
+		};
+		765A4FD72D60D0D200F94BDF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RM7YJHGUFJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.duilee.OneBookAMonthTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OneBookAMonth.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OneBookAMonth";
+			};
+			name = Release;
+		};
+		765A4FD92D60D0D200F94BDF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RM7YJHGUFJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.duilee.OneBookAMonthUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OneBookAMonth;
+			};
+			name = Debug;
+		};
+		765A4FDA2D60D0D200F94BDF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RM7YJHGUFJ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.duilee.OneBookAMonthUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = OneBookAMonth;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		765A4FA42D60D0D100F94BDF /* Build configuration list for PBXProject "OneBookAMonth" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				765A4FD32D60D0D200F94BDF /* Debug */,
+				765A4FD42D60D0D200F94BDF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		765A4FD02D60D0D200F94BDF /* Build configuration list for PBXNativeTarget "OneBookAMonth" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				765A4FD12D60D0D200F94BDF /* Debug */,
+				765A4FD22D60D0D200F94BDF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		765A4FD52D60D0D200F94BDF /* Build configuration list for PBXNativeTarget "OneBookAMonthTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				765A4FD62D60D0D200F94BDF /* Debug */,
+				765A4FD72D60D0D200F94BDF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		765A4FD82D60D0D200F94BDF /* Build configuration list for PBXNativeTarget "OneBookAMonthUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				765A4FD92D60D0D200F94BDF /* Debug */,
+				765A4FDA2D60D0D200F94BDF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 765A4FA12D60D0D100F94BDF /* Project object */;
+}
