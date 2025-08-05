@@ -10,6 +10,9 @@ import SwiftData
 
 @main
 struct OneBookAMonthApp: App {
+    @Environment(\.modelContext) private var modelContext
+    @State private var isLoading = true
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
@@ -25,8 +28,21 @@ struct OneBookAMonthApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if isLoading {
+                LoadingView()
+                    .onAppear {
+                        // Simulate loading time or actual initialization
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                            withAnimation {
+                                isLoading = false
+                            }
+                        }
+                    }
+            } else {
+                ContentView()
+                    .transition(.opacity)
+            }
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(for: [Item.self, PageEntry.self])
     }
 }
