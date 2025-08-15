@@ -71,10 +71,34 @@ struct ProgressBar: View {
     }
 }
 
+// Helper view for background blur effect
+struct BackgroundBlurView: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {}
+}
+
 struct TestCellView: View {
+    @Environment(\.modelContext) private var modelContext
+    
     let item: Item
+    var onMemoTap: (() -> Void)? = nil  // Optional callback for memo action
+    var onUpdateTap: (() -> Void)? = nil  // Optional callback for update action
+    
     @State private var averagePace: Double = 0
     @State private var dayTag: String = ""
+    @State private var isPressed: Bool = false
+    
+    // State for sheets - only keep update progress local if no callback provided
+    @State private var showUpdateProgress = false
+    @State private var selectedPage = 0
+    
+    private var itemManager: ItemManager {
+        ItemManager(modelContext: modelContext)
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -83,7 +107,7 @@ struct TestCellView: View {
             HStack(spacing: 12) {
                 ZStack(alignment: .bottom) {
                     BookCoverView(imageData: item.book_image)
-                        .frame(width: 65, height: 85)
+                        .frame(width: 65, height: 90)
                         .cornerRadius(8)
                     
                     // Day tag overlaid on book cover
@@ -99,7 +123,7 @@ struct TestCellView: View {
                         .offset(y: 4)
                 }
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text(item.name)
                         .font(.system(size: 17, weight: .semibold))
                         .lineLimit(1)
@@ -151,25 +175,11 @@ struct TestCellView: View {
                                 .font(.system(size: 13, weight: .medium))
 
                             Spacer()
-
-                            Button(action: {}) {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "plus.circle.fill")
-                                    Text("Update")
-                                }
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(.blue)
-                                .padding(.trailing, 10)
-                            }
                             
-                            Button(action: {}) {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "note.text")
-                                    Text("Memo")
-                                }
-                                .font(.system(size: 13, weight: .medium))
+                            Text("Hold for actions")
+                                .font(.system(size: 12, weight: .bold))
                                 .foregroundColor(.blue)
-                            }
+                                .opacity(0.7)
                         }
                     }
                     .padding(.top, 8)
@@ -191,6 +201,8 @@ struct TestCellView: View {
         .onAppear {
             updateDayTag()
         }
+        // Only show sheet if no callback provided (for standalone use)
+        // When used in CompletedViewModel, the parent will handle presentation
     }
     
     private func updateDayTag() {

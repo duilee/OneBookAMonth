@@ -49,8 +49,7 @@ struct FloatingButtonView: View {
                         }
                     
                     AddItemViewModel(
-                        isPresented: $showingAddDialog,
-                        needRefresh: $needRefresh
+                        isPresented: $showingAddDialog, needRefresh: $needRefresh
                     )
                 }
             }

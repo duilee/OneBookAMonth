@@ -35,7 +35,7 @@ struct HomeViewModel: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
+            //ZStack {
                 
                 VStack {
                     HStack {
@@ -239,8 +239,8 @@ struct HomeViewModel: View {
                         .padding(.bottom, 60)
                     }
                 }
-                FloatingButtonView(needRefresh: $calendarRefreshTrigger)
-            }
+                //FloatingButtonView(needRefresh: $calendarRefreshTrigger)
+            //}
             .overlay {
                 if isCalendarDateSelected {
                     ZStack {
