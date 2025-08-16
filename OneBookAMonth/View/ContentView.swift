@@ -23,15 +23,16 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeViewModel(selectedTab: $selectedTab, currentDate: $currentDate)
+
+            CompletedViewModel()
                 .tabItem {
                     Label("Readings", systemImage: "book")
                 }
                 .tag(0)
             
-            CompletedViewModel()
+            HomeViewModel(selectedTab: $selectedTab, currentDate: $currentDate)
                 .tabItem {
-                    Label("Books", systemImage: "list.bullet")
+                    Label("Stats", systemImage: "chart.bar")
                 }
                 .tag(1)
             

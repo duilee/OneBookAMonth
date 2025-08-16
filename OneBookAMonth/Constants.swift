@@ -29,7 +29,7 @@ enum CompletedStatus: String, CaseIterable {
 
 // Color Palette
 struct ColorPalette {
-    let light = Color(red: 84/255, green: 139/255, blue: 209/255)
-    let medium = Color(red: 65/255, green: 117/255, blue: 194/255)
-    let deep = Color(red: 45/255, green: 95/255, blue: 172/255)
+    let light = Color(red: 150/255, green: 160/255, blue: 220/255)
+    let medium = Color(red: 100/255, green: 110/255, blue: 190/255)
+    let deep = Color(red: 25/255, green: 45/255, blue: 155/255)
 }
