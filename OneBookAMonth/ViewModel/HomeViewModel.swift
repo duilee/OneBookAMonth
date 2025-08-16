@@ -310,7 +310,7 @@ struct HomeViewModel: View {
                                 }
                                 .padding(.vertical, 16)
                             }
-                            .padding(.bottom, 8)
+                            .padding(.bottom, 4)
                             
                             ZStack {
                                 Rectangle()
