@@ -42,8 +42,9 @@ struct CompletedViewModel: View {
         NavigationView {
             VStack {
                 HStack {
-                    Text("Books")
+                    Text("Readings")
                         .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(Color.black)
                     
                     Spacer()
                     
@@ -72,7 +73,7 @@ struct CompletedViewModel: View {
                                 //.frame(maxWidth: .infinity)
                                 .background(
                                     RoundedRectangle(cornerRadius: 20)
-                                        .fill(selectedCompleteStatus == status ? Color(red: 60/255, green: 60/255, blue: 60/255) : Color.gray.opacity(0.1))
+                                        .fill(selectedCompleteStatus == status ? Color(red: 25/255, green: 45/255, blue: 155/255) : Color.gray.opacity(0.1))
                                 )
                         }
                         .buttonStyle(PlainButtonStyle())
@@ -115,7 +116,7 @@ struct CompletedViewModel: View {
                         LazyVStack(spacing: 8) {
                             ForEach(targetItems) { item in
                                 NavigationLink(destination: DetailViewModel(item: item)) {
-                                    TestCellView(
+                                    BookCardView(
                                         item: item,
                                         onMemoTap: {
                                             selectedItemForMemo = item

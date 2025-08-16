@@ -167,6 +167,27 @@ class ItemManager {
     }
 }
 
+// MARK: - Week Heatmap Data
+extension ItemManager {
+    struct WeekDayData {
+        let date: Date
+        let dayLetter: String
+        let dayNumber: Int
+        let hasActivity: Bool
+        let pages: Int
+        let isToday: Bool
+    }
+    
+    struct RecentMemoData {
+        let memo: Memo
+        let item: Item
+        let coverImageData: Data?
+        let hasImage: Bool
+        let text: String
+        let date: Date
+    }
+}
+
 // Extension for analytics
 extension ItemManager {
     // Get average pages read per day with days read count
@@ -290,6 +311,62 @@ extension ItemManager {
         }
         
         return (daysLeft, pagesPerDay)
+    }
+    
+    // Get this week's reading data for heatmap
+    func getThisWeekData(for items: [Item], selectedDate: Date = Date()) -> [WeekDayData] {
+        // Get start of current week (Monday)
+        guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: selectedDate)?.start else { return [] }
+        
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "E"
+        
+        var weekData: [WeekDayData] = []
+        
+        // Generate 7 days of data (Monday to Sunday)
+        for dayOffset in 0..<7 {
+            guard let currentDay = calendar.date(byAdding: .day, value: dayOffset, to: weekStart) else { continue }
+            
+            // Calculate total pages read on this day across all items
+            let dayPages = items.reduce(0) { total, item in
+                total + item.getPagesReadForDate(currentDay)
+            }
+            
+            let dayData = WeekDayData(
+                date: currentDay,
+                dayLetter: String(dayFormatter.string(from: currentDay).prefix(1)), // M, T, W, etc.
+                dayNumber: calendar.component(.day, from: currentDay),
+                hasActivity: dayPages > 0,
+                pages: dayPages,
+                isToday: calendar.isDate(currentDay, inSameDayAs: Date())
+            )
+            
+            weekData.append(dayData)
+        }
+        
+        return weekData
+    }
+    
+    // Get recent memos from all items within last 30 days
+    func getRecentMemos(for items: [Item]) -> [RecentMemoData] {
+        let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+        
+        let recentMemos = items.flatMap { item in
+            item.memos
+                .filter { $0.date >= thirtyDaysAgo }
+                .map { memo in
+                    RecentMemoData(
+                        memo: memo,
+                        item: item,
+                        coverImageData: item.book_image,
+                        hasImage: memo.hasImage,
+                        text: memo.text,
+                        date: memo.date
+                    )
+                }
+        }
+        
+        return recentMemos.sorted { $0.date > $1.date }
     }
 
     func saveBookImage(for item: Item, image: UIImage) {
@@ -474,6 +551,130 @@ extension ItemManager {
     
     func clearMemoImageCache() {
         MemoImageManager.shared.clearCache()
+    }
+}
+
+// MARK: - Chart Data Methods
+extension ItemManager {
+    struct ChartDataPoint: Identifiable {
+        let id = UUID()
+        let label: String
+        let date: Date
+        let pages: Int
+    }
+    
+    func getHistoricalReadingData(for items: [Item], period: TimePeriod) -> [ChartDataPoint] {
+        guard !items.isEmpty else { return [] }
+        
+        // Get the earliest book timestamp
+        let startDate = items.compactMap { $0.timestamp }.min() ?? Date()
+        let endDate = Date()
+        
+        switch period {
+        case .week:
+            return aggregateByWeek(items: items, from: startDate, to: endDate)
+        case .month, .all:
+            return aggregateByMonth(items: items, from: startDate, to: endDate)
+        case .day:
+            // For day view, show last 7 days
+            let weekAgo = calendar.date(byAdding: .day, value: -7, to: endDate) ?? startDate
+            return aggregateByDay(items: items, from: weekAgo, to: endDate)
+        }
+    }
+    
+    private func aggregateByDay(items: [Item], from startDate: Date, to endDate: Date) -> [ChartDataPoint] {
+        var result: [ChartDataPoint] = []
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "EEE"
+        
+        var currentDate = calendar.startOfDay(for: startDate)
+        let endDay = calendar.startOfDay(for: endDate)
+        
+        // Generate complete timeline (all days)
+        while currentDate <= endDay {
+            let dayPages = items.reduce(0) { total, item in
+                total + item.getPagesForDate(currentDate)
+            }
+            
+            let label = dayFormatter.string(from: currentDate)
+            result.append(ChartDataPoint(label: label, date: currentDate, pages: dayPages))
+            
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? endDay
+        }
+        
+        return result
+    }
+    
+    private func aggregateByWeek(items: [Item], from startDate: Date, to endDate: Date) -> [ChartDataPoint] {
+        var weeklyData: [Date: Int] = [:]
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        
+        // Aggregate all page entries by week
+        for item in items {
+            for entry in item.pageEntries {
+                // Get start of week for this entry
+                guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: entry.date)?.start else { continue }
+                weeklyData[weekStart, default: 0] += entry.pagesRead
+            }
+        }
+        
+        // Generate complete timeline (all weeks from start to end)
+        var result: [ChartDataPoint] = []
+        var currentWeek = calendar.dateInterval(of: .weekOfYear, for: startDate)?.start ?? startDate
+        let endWeek = calendar.dateInterval(of: .weekOfYear, for: endDate)?.start ?? endDate
+        
+        // Limit to last 12 weeks to prevent overwhelming chart
+        let limitedStart = max(currentWeek, calendar.date(byAdding: .weekOfYear, value: -12, to: endWeek) ?? currentWeek)
+        currentWeek = limitedStart
+        
+        while currentWeek <= endWeek {
+            let label = formatter.string(from: currentWeek)
+            let pages = weeklyData[currentWeek] ?? 0 // Zero if no data
+            
+            result.append(ChartDataPoint(label: label, date: currentWeek, pages: pages))
+            currentWeek = calendar.date(byAdding: .weekOfYear, value: 1, to: currentWeek) ?? endWeek
+        }
+        
+        return result
+    }
+    
+    private func aggregateByMonth(items: [Item], from startDate: Date, to endDate: Date) -> [ChartDataPoint] {
+        var monthlyData: [Date: Int] = [:]
+        let formatter = DateFormatter()
+        
+        // Aggregate all page entries by month
+        for item in items {
+            for entry in item.pageEntries {
+                // Get start of month for this entry
+                guard let monthStart = calendar.dateInterval(of: .month, for: entry.date)?.start else { continue }
+                monthlyData[monthStart, default: 0] += entry.pagesRead
+            }
+        }
+        
+        // Generate complete timeline (all months from start to end)
+        var result: [ChartDataPoint] = []
+        var currentMonth = calendar.dateInterval(of: .month, for: startDate)?.start ?? startDate
+        let endMonth = calendar.dateInterval(of: .month, for: endDate)?.start ?? endDate
+        
+        // Limit to last 12 months to prevent overwhelming chart
+        let limitedStart = max(currentMonth, calendar.date(byAdding: .month, value: -12, to: endMonth) ?? currentMonth)
+        currentMonth = limitedStart
+        
+        // Format labels based on year span
+        let currentYear = calendar.component(.year, from: Date())
+        
+        while currentMonth <= endMonth {
+            let year = calendar.component(.year, from: currentMonth)
+            formatter.dateFormat = year == currentYear ? "MMM" : "MMM 'yy"
+            let label = formatter.string(from: currentMonth)
+            let pages = monthlyData[currentMonth] ?? 0 // Zero if no data
+            
+            result.append(ChartDataPoint(label: label, date: currentMonth, pages: pages))
+            currentMonth = calendar.date(byAdding: .month, value: 1, to: currentMonth) ?? endMonth
+        }
+        
+        return result
     }
 }
 

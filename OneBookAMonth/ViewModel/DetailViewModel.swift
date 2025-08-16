@@ -123,7 +123,7 @@ struct DetailViewModel: View {
                                 HStack {
                                     Text("Current Progress")
                                         .font(.system(size: 20, weight: .bold))
-                                        .foregroundColor(Color(UIColor.label))
+                                        .foregroundColor(Color(red: 25/255, green: 45/255, blue: 155/255))
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     Spacer()
                                 }
@@ -361,23 +361,24 @@ struct DetailViewModel: View {
                     .padding(.horizontal, 12)
                     
                     // Memo Section with LazyVStack
+                    // add no memo case
                     let memos = itemManager.getMemos(for: item!, sortedBy: .dateDescending)
-                    if !memos.isEmpty {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Text("Memos")
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .foregroundColor(Color(red: 25/255, green: 45/255, blue: 155/255))
-                                Spacer()
-                                Text("\(memos.count)")
-                                    .font(.caption)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 2)
-                                    .background(Color.blue.opacity(0.2))
-                                    .cornerRadius(10)
-                            }
-                            .padding(.horizontal, 12)
-                            
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Text("Memos")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(Color(red: 25/255, green: 45/255, blue: 155/255))
+                            Spacer()
+                            Text("\(memos.count)")
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(Color.blue.opacity(0.2))
+                                .cornerRadius(10)
+                        }
+                        .padding(.horizontal, 16)
+                        if !memos.isEmpty {
                             // Use LazyVStack for performance
                             LazyVStack(spacing: 12) {
                                 ForEach(memos, id: \.id) { memo in
@@ -404,9 +405,31 @@ struct DetailViewModel: View {
                                     }
                                 }
                             }
+                        } else {
+                            VStack(spacing: 16) {
+                                Image(systemName: "lightbulb.fill")
+                                    .font(.system(size: 36))
+                                    .foregroundColor(Color(red: 25/255, green: 45/255, blue: 155/255))
+                                
+                                VStack(spacing: 8) {
+                                    Text("Capture your thoughts!")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(.primary)
+                                    
+                                    Text("Add notes about key insights, favorite quotes, or memorable moments from your reading")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.secondary)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 20)
+                                }
+                            }
+                            .padding(.vertical, 32)
+                            .padding(.horizontal, 16)
                         }
-                        .padding(.top, 16)
                     }
+                    .padding(.top, 16)
+                    
+                    
                     
                     // Delete Button
                     Button(action: {
@@ -414,7 +437,7 @@ struct DetailViewModel: View {
                     }) {
                         ZStack {
                             Rectangle()
-                                .fill(Color.red)
+                                .fill(Color.gray.opacity(0.6))
                                 .cornerRadius(12)
                                 .frame(height: 44)
                                 .shadow(color: Color.black.opacity(0.3), radius: 3, x: 0, y: 2)

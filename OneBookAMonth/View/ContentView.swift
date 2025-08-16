@@ -26,13 +26,13 @@ struct ContentView: View {
 
             CompletedViewModel()
                 .tabItem {
-                    Label("Books", systemImage: "list.bullet")
+                    Label("Readings", systemImage: "book")
                 }
                 .tag(0)
             
             HomeViewModel(selectedTab: $selectedTab, currentDate: $currentDate)
                 .tabItem {
-                    Label("Readings", systemImage: "book")
+                    Label("Stats", systemImage: "chart.bar")
                 }
                 .tag(1)
             

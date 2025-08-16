@@ -1,5 +1,5 @@
 //
-//  TestCellView.swift
+//  BookCardView.swift
 //  OneBookAMonth
 //
 //  Created by delightroom on 8/4/25.
@@ -7,45 +7,6 @@
 
 import SwiftUI
 
-// BookCoverView component
-struct BookCoverView: View {
-    let imageData: Data?
-
-    var body: some View {
-        if let imageData = imageData, let uiImage = UIImage(data: imageData) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-                )
-        } else {
-            // Placeholder when no image
-            ZStack {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.blue.opacity(0.3), Color.purple.opacity(0.3)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-
-                VStack(spacing: 4) {
-                    Image(systemName: "book.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white.opacity(0.8))
-
-                    Text("No Cover")
-                        .font(.caption2)
-                        .foregroundColor(.white.opacity(0.6))
-                }
-            }
-        }
-    }
-}
 
 // Progress Bar component
 struct ProgressBar: View {
@@ -81,14 +42,13 @@ struct BackgroundBlurView: UIViewRepresentable {
     func updateUIView(_ uiView: UIView, context: Context) {}
 }
 
-struct TestCellView: View {
+struct BookCardView: View {
     @Environment(\.modelContext) private var modelContext
     
     let item: Item
     var onMemoTap: (() -> Void)? = nil  // Optional callback for memo action
     var onUpdateTap: (() -> Void)? = nil  // Optional callback for update action
     
-    @State private var averagePace: Double = 0
     @State private var dayTag: String = ""
     @State private var isPressed: Bool = false
     
@@ -123,28 +83,31 @@ struct TestCellView: View {
                         .offset(y: 4)
                 }
 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(item.name)
-                        .font(.system(size: 17, weight: .semibold))
+                        .font(.system(size: 18, weight: .semibold))
                         .lineLimit(1)
 
-                    HStack(spacing: 16) {
+                    HStack(spacing: 12) {
+                        let finishTimeline = itemManager.getFinishTimeline(item: item)
                         // Reading pace
                         HStack(spacing: 4) {
                             Image(systemName: "speedometer")
                                 .font(.system(size: 14))
-                            Text("\(Int(averagePace)) pages/day")
+                            Text("\(Int(finishTimeline.pagesPerDay)) pages/day")
                                 .font(.system(size: 14, weight: .medium))
-                                //.font(.caption2)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
                         }
 
                         // Expected completion
                         HStack(spacing: 4) {
                             Image(systemName: "calendar")
                                 .font(.system(size: 14))
-                            Text("Finish in 5 days")
+                            Text("Done in \(Int(finishTimeline.daysLeft)) days")
                                 .font(.system(size: 14, weight: .medium))
-                                //.font(.caption)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
                         }
                     }
                     .foregroundColor(.secondary)
@@ -231,5 +194,5 @@ struct TestCellView: View {
     ))
     
     let newItem = Item(timestamp: dateFromString ?? Date(), name: "StoryWorthyStoryWorthyStoryWorthy", numberOfPages: 450)
-    TestCellView(item: newItem)
+    BookCardView(item: newItem)
 }
