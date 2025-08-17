@@ -30,20 +30,20 @@ struct HomeViewModel: View {
     @State private var selectedPeriod: TimePeriod = .week
     @State private var isCalendarExpanded = false
     @State private var isRecentMemosExpanded = false
-    private var itemManager: ItemManager {
-            ItemManager(modelContext: modelContext)
-        }
+    
+    // Store ItemManager as State to prevent recreating on every access
+    @State private var itemManager: ItemManager?
     
     private let calendar = Calendar.current
     
     // Week heatmap data
     private var thisWeekDays: [ItemManager.WeekDayData] {
-        itemManager.getThisWeekData(for: items, selectedDate: currentDate)
+        itemManager?.getThisWeekData(for: items, selectedDate: currentDate) ?? []
     }
     
     // Recent memos data
     private var recentMemos: [ItemManager.RecentMemoData] {
-        itemManager.getRecentMemos(for: items)
+        itemManager?.getRecentMemos(for: items) ?? []
     }
     
     // Helper computed properties for recent memos
@@ -86,7 +86,7 @@ struct HomeViewModel: View {
                                 .padding(.vertical, 4)
                                 
                                 // Stats View
-                                let stats = itemManager.getStats(for: items, period: selectedPeriod, selectedDate: currentDate)
+                                let stats = itemManager?.getStats(for: items, period: selectedPeriod, selectedDate: currentDate) ?? (totalPages: 0, books: 0, daysRead: 0, avgPages: 0.0)
                                 VStack(spacing: 20) {
                                     // Total Pages
                                     VStack(spacing: 4) {
@@ -111,7 +111,7 @@ struct HomeViewModel: View {
                             }
                             
                             // Chart View
-                            let chartData = itemManager.getHistoricalReadingData(for: items, period: selectedPeriod)
+                            let chartData = itemManager?.getHistoricalReadingData(for: items, period: selectedPeriod) ?? []
                             ReadingChartView(data: chartData, period: selectedPeriod)
                                 .padding(.bottom, 8)
                             
@@ -202,7 +202,7 @@ struct HomeViewModel: View {
                                     
                                     if isCalendarExpanded {
                                         ZStack {
-                                            let dateRange = itemManager.getDateRange(for: items)
+                                            let dateRange = itemManager?.getDateRange(for: items) ?? (start: Date(), end: Date())
                                             // Navigation buttons in top right
                                             HStack(spacing: 8) {
                                                 Button(action: {
@@ -252,7 +252,7 @@ struct HomeViewModel: View {
                                             
                                             VStack {
                                                 
-                                                let dateActivityCounts = itemManager.getDateActivityCounts(for: items)
+                                                let dateActivityCounts = itemManager?.getDateActivityCounts(for: items) ?? [:]
                                                 
                                                 
                                                 CalendarViewRepresentable(
@@ -408,7 +408,12 @@ struct HomeViewModel: View {
                 }
             }
         }
-        
+        .onAppear {
+            // Initialize ItemManager once to prevent memory leak
+            if itemManager == nil {
+                itemManager = ItemManager(modelContext: modelContext)
+            }
+        }
         .colorScheme(.light)
     }
 }
