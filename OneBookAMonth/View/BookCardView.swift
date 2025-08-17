@@ -44,6 +44,7 @@ struct BackgroundBlurView: UIViewRepresentable {
 
 struct BookCardView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     
     let item: Item
     var onMemoTap: (() -> Void)? = nil  // Optional callback for memo action
@@ -51,6 +52,7 @@ struct BookCardView: View {
     
     @State private var dayTag: String = ""
     @State private var isPressed: Bool = false
+    @State private var lastUpdateDate = Date()
     
     // State for sheets - only keep update progress local if no callback provided
     @State private var showUpdateProgress = false
@@ -175,10 +177,20 @@ struct BookCardView: View {
         )
         .onAppear {
             updateDayTag()
-            // Calculate timeline once to avoid creating multiple ItemManager instances
-            if finishTimeline == nil {
-                let manager = ItemManager(modelContext: modelContext)
-                finishTimeline = manager.getFinishTimeline(item: item)
+            updateFinishTimeline()
+            lastUpdateDate = Date()
+        }
+        .onChange(of: item.currentPage) {
+            updateDayTag()
+            updateFinishTimeline()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                let now = Date()
+                if !Calendar.current.isDate(lastUpdateDate, inSameDayAs: now) {
+                    updateDayTag()
+                    lastUpdateDate = now
+                }
             }
         }
         // Only show sheet if no callback provided (for standalone use)
@@ -197,6 +209,16 @@ struct BookCardView: View {
             let startOfToday = calendar.startOfDay(for: Date())
             days = calendar.dateComponents([.day], from: startOfTimestamp, to: startOfToday).day ?? 0
             dayTag = "D+\(abs(days))"
+        }
+    }
+    
+    private func updateFinishTimeline() {
+        // Only calculate timeline for ongoing books
+        if item.progress >= 1.0 {
+            finishTimeline = nil
+        } else {
+            let manager = ItemManager(modelContext: modelContext)
+            finishTimeline = manager.getFinishTimeline(item: item)
         }
     }
 }
