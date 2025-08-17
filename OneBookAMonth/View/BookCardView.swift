@@ -88,27 +88,39 @@ struct BookCardView: View {
                         .lineLimit(1)
 
                     HStack(spacing: 12) {
-                        if let timeline = finishTimeline {
-                            // Reading pace
+                        if item.progress >= 1.0 {
                             HStack(spacing: 4) {
-                                Image(systemName: "speedometer")
+                                Image(systemName: "checkmark.circle.fill")
                                     .font(.system(size: 14))
-                                Text("\(Int(timeline.pagesPerDay)) pages/day")
+                                Text("Done!")
                                     .font(.system(size: 14, weight: .medium))
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.7)
                             }
+                        } else {
+                            if let timeline = finishTimeline {
+                                // Reading pace
+                                HStack(spacing: 4) {
+                                    Image(systemName: "speedometer")
+                                        .font(.system(size: 14))
+                                    Text("\(Int(timeline.pagesPerDay)) pages/day")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                }
 
-                            // Expected completion
-                            HStack(spacing: 4) {
-                                Image(systemName: "calendar")
-                                    .font(.system(size: 14))
-                                Text("Done in \(Int(timeline.daysLeft)) days")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.7)
+                                // Expected completion
+                                HStack(spacing: 4) {
+                                    Image(systemName: "calendar")
+                                        .font(.system(size: 14))
+                                    Text("Done in \(Int(timeline.daysLeft)) days")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                }
                             }
                         }
+
                     }
                     .foregroundColor(.secondary)
                     
