@@ -56,9 +56,8 @@ struct BookCardView: View {
     @State private var showUpdateProgress = false
     @State private var selectedPage = 0
     
-    private var itemManager: ItemManager {
-        ItemManager(modelContext: modelContext)
-    }
+    // Store timeline data to avoid recreating ItemManager
+    @State private var finishTimeline: (daysLeft: Int, pagesPerDay: Int)?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -89,25 +88,26 @@ struct BookCardView: View {
                         .lineLimit(1)
 
                     HStack(spacing: 12) {
-                        let finishTimeline = itemManager.getFinishTimeline(item: item)
-                        // Reading pace
-                        HStack(spacing: 4) {
-                            Image(systemName: "speedometer")
-                                .font(.system(size: 14))
-                            Text("\(Int(finishTimeline.pagesPerDay)) pages/day")
-                                .font(.system(size: 14, weight: .medium))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
-                        }
+                        if let timeline = finishTimeline {
+                            // Reading pace
+                            HStack(spacing: 4) {
+                                Image(systemName: "speedometer")
+                                    .font(.system(size: 14))
+                                Text("\(Int(timeline.pagesPerDay)) pages/day")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                            }
 
-                        // Expected completion
-                        HStack(spacing: 4) {
-                            Image(systemName: "calendar")
-                                .font(.system(size: 14))
-                            Text("Done in \(Int(finishTimeline.daysLeft)) days")
-                                .font(.system(size: 14, weight: .medium))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
+                            // Expected completion
+                            HStack(spacing: 4) {
+                                Image(systemName: "calendar")
+                                    .font(.system(size: 14))
+                                Text("Done in \(Int(timeline.daysLeft)) days")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
+                            }
                         }
                     }
                     .foregroundColor(.secondary)
@@ -163,6 +163,11 @@ struct BookCardView: View {
         )
         .onAppear {
             updateDayTag()
+            // Calculate timeline once to avoid creating multiple ItemManager instances
+            if finishTimeline == nil {
+                let manager = ItemManager(modelContext: modelContext)
+                finishTimeline = manager.getFinishTimeline(item: item)
+            }
         }
         // Only show sheet if no callback provided (for standalone use)
         // When used in CompletedViewModel, the parent will handle presentation

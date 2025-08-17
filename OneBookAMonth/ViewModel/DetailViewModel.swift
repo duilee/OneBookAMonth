@@ -30,11 +30,11 @@ struct DetailViewModel: View {
     @State private var memoToDelete: Memo?
     @State private var showDeleteMemoConfirmation = false
     
+    // Store ItemManager as State to prevent recreating on every access
+    @State private var itemManager: ItemManager?
+    
     private let calendar = Calendar.current
     let item: Item?
-    private var itemManager: ItemManager {
-            ItemManager(modelContext: modelContext)
-        }
     
     var body: some View {
         VStack {
@@ -174,7 +174,7 @@ struct DetailViewModel: View {
                                 .padding(.top, 8)
                                 .padding(.bottom, 4)
                                 HStack {
-                                    let readingStats = itemManager.getAveragePagesPerDay(item!)
+                                    let readingStats = itemManager?.getAveragePagesPerDay(item!) ?? (average: 0.0, daysRead: 0)
                                     ZStack {
                                         Rectangle()
                                             .fill(Color.gray.opacity(0.08))
@@ -286,7 +286,7 @@ struct DetailViewModel: View {
                                 
                                 ToolbarItemGroup(placement: .confirmationAction) {
                                     Button("Save") {
-                                        itemManager.updateProgress(item!, pages: selectedPage)
+                                        itemManager?.updateProgress(item!, pages: selectedPage)
                                         calendarRefreshTrigger = UUID()
                                         isUpdatingProgress = false
                                     }
@@ -302,8 +302,8 @@ struct DetailViewModel: View {
                             .fill(Color.gray.opacity(0.08))
                             .cornerRadius(16)
                         VStack {
-                            let dateRange = itemManager.getDateRange(for: [item!])
-                            let pageEntries = itemManager.getPageEntries(for: item!)
+                            let dateRange = itemManager?.getDateRange(for: [item!]) ?? (start: Date(), end: Date())
+                            let pageEntries = itemManager?.getPageEntries(for: item!) ?? [:]
                             CalendarViewRepresentable(
                                 calendar: calendar,
                                 visibleDateRange: dateRange.start...dateRange.end,
@@ -362,7 +362,7 @@ struct DetailViewModel: View {
                     
                     // Memo Section with LazyVStack
                     // add no memo case
-                    let memos = itemManager.getMemos(for: item!, sortedBy: .dateDescending)
+                    let memos = itemManager?.getMemos(for: item!, sortedBy: .dateDescending) ?? []
                     
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
@@ -456,6 +456,12 @@ struct DetailViewModel: View {
             }
             
         }
+        .onAppear {
+            // Initialize ItemManager once to prevent memory leak
+            if itemManager == nil {
+                itemManager = ItemManager(modelContext: modelContext)
+            }
+        }
         .sheet(isPresented: $isEditingItem) {
             EditItemViewModel(item: item!, isPresented: $isEditingItem)
                 .presentationDetents([.height(320)])
@@ -499,7 +505,7 @@ struct DetailViewModel: View {
                         isPresented: $showDeleteConfirmation,
                         itemName: item!.name,
                         onConfirm: {
-                            itemManager.deleteItem(item!)
+                            itemManager?.deleteItem(item!)
                         }
                     )
                 }
@@ -583,7 +589,7 @@ struct DetailViewModel: View {
             }
             Button("Delete", role: .destructive) {
                 if let memo = memoToDelete {
-                    itemManager.deleteMemo(memo, from: item!)
+                    itemManager?.deleteMemo(memo, from: item!)
                     memoToDelete = nil
                 }
             }
@@ -596,7 +602,7 @@ struct DetailViewModel: View {
     func loadImage() {
         guard let inputImage = inputImage else { return }
         if let item = item {
-            itemManager.saveBookImage(for: item, image: inputImage)
+            itemManager?.saveBookImage(for: item, image: inputImage)
         }
     }
 }

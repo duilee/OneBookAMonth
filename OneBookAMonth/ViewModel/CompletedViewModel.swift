@@ -25,6 +25,10 @@ struct CompletedViewModel: View {
     // State for adding new books
     @State private var showAddItem = false
     @State private var refreshTrigger = UUID()
+    
+    // Store ItemManager as State to prevent recreating on every access
+    @State private var itemManager: ItemManager?
+    
     // Computed property to get incomplete items
     private var targetItems: [Item] {
         if selectedCompleteStatus == .completed {
@@ -33,10 +37,6 @@ struct CompletedViewModel: View {
             return items.filter { $0.progress < 1.0 }
         }
     }
-    
-    private var itemManager: ItemManager {
-            ItemManager(modelContext: modelContext)
-        }
     
     var body: some View {
         NavigationView {
@@ -61,9 +61,10 @@ struct CompletedViewModel: View {
                 HStack(spacing: 4) {
                     ForEach(CompletedStatus.allCases, id: \.self) { status in
                         Button(action: {
-                            withAnimation(.easeInOut(duration: 0.3)) {
-                                selectedCompleteStatus = status
-                            }
+                            selectedCompleteStatus = status
+//                            withAnimation(.easeInOut(duration: 0.3)) {
+//                                selectedCompleteStatus = status
+//                            }
                         }) {
                             Text(status.rawValue)
                                 .font(.system(size: 15, weight: selectedCompleteStatus == status ? .semibold : .medium))
@@ -150,14 +151,14 @@ struct CompletedViewModel: View {
                                     // Quick actions
                                     Button {
                                         let newPage = min(item.currentPage + 10, item.numberOfPages)
-                                        itemManager.updateProgress(item, pages: newPage)
+                                        itemManager?.updateProgress(item, pages: newPage)
                                     } label: {
                                         Label("Quick +10 pages", systemImage: "plus.circle")
                                     }
                                     
                                     Button {
                                         let newPage = min(item.currentPage + 25, item.numberOfPages)
-                                        itemManager.updateProgress(item, pages: newPage)
+                                        itemManager?.updateProgress(item, pages: newPage)
                                     } label: {
                                         Label("Quick +25 pages", systemImage: "plus.circle.fill")
                                     }
@@ -166,7 +167,7 @@ struct CompletedViewModel: View {
                                         Divider()
                                         
                                         Button {
-                                            itemManager.updateProgress(item, pages: item.numberOfPages)
+                                            itemManager?.updateProgress(item, pages: item.numberOfPages)
                                         } label: {
                                             Label("Mark as Finished", systemImage: "checkmark.circle.fill")
                                         }
@@ -178,9 +179,6 @@ struct CompletedViewModel: View {
                         .padding(.top, 8)
                         .padding(.bottom, 60)
                     }
-                    .refreshable {
-                        // Optional: Add refresh functionality if needed
-                    }
                 }
             }
             //.navigationBarTitle("1 Book a Month 📚")
@@ -188,6 +186,12 @@ struct CompletedViewModel: View {
             .frame(maxHeight: .infinity, alignment: .top)
             .padding(.top, 10)
             .padding(.horizontal, 16)
+        }
+        .onAppear {
+            // Initialize ItemManager once to prevent memory leak
+            if itemManager == nil {
+                itemManager = ItemManager(modelContext: modelContext)
+            }
         }
         .colorScheme(.light)
         // Sheet for update progress
@@ -224,7 +228,7 @@ struct CompletedViewModel: View {
                         
                         ToolbarItem(placement: .confirmationAction) {
                             Button("Save") {
-                                itemManager.updateProgress(item, pages: selectedPage)
+                                itemManager?.updateProgress(item, pages: selectedPage)
                                 showUpdateProgress = false
                                 selectedItemForUpdate = nil
                             }
