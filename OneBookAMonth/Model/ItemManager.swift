@@ -570,16 +570,20 @@ extension ItemManager {
         let startDate = items.compactMap { $0.timestamp }.min() ?? Date()
         let endDate = Date()
         
+        let fullData: [ChartDataPoint]
         switch period {
         case .week:
-            return aggregateByWeek(items: items, from: startDate, to: endDate)
+            fullData = aggregateByWeek(items: items, from: startDate, to: endDate)
         case .month, .all:
-            return aggregateByMonth(items: items, from: startDate, to: endDate)
+            fullData = aggregateByMonth(items: items, from: startDate, to: endDate)
         case .day:
             // For day view, show last 7 days
             let weekAgo = calendar.date(byAdding: .day, value: -7, to: endDate) ?? startDate
-            return aggregateByDay(items: items, from: weekAgo, to: endDate)
+            fullData = aggregateByDay(items: items, from: weekAgo, to: endDate)
         }
+        
+        // Limit to most recent 15 data points
+        return Array(fullData.suffix(15))
     }
     
     private func aggregateByDay(items: [Item], from startDate: Date, to endDate: Date) -> [ChartDataPoint] {
@@ -666,7 +670,7 @@ extension ItemManager {
         
         while currentMonth <= endMonth {
             let year = calendar.component(.year, from: currentMonth)
-            formatter.dateFormat = year == currentYear ? "MMM" : "MMM 'yy"
+            formatter.dateFormat = year == currentYear ? "MMM" : "'yy MMM"
             let label = formatter.string(from: currentMonth)
             let pages = monthlyData[currentMonth] ?? 0 // Zero if no data
             

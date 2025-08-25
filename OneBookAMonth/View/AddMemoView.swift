@@ -275,16 +275,6 @@ struct AddMemoView: View {
             
             Spacer()
             
-            if memoText.isEmpty {
-                HStack(spacing: 4) {
-                    Image(systemName: "lightbulb")
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                    Text("Try adding a quote or page reference")
-                        .font(.caption)
-                        .foregroundColor(.blue)
-                }
-            }
         }
         .padding(.horizontal, 4)
     }
