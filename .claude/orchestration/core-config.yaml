@@ -1,0 +1,134 @@
+# Orchestration Core Configuration
+# Version: 1.0.0
+# Purpose: Define project structure and agent workflow configuration
+
+project:
+  name: "Claude Orchestration System"
+  version: "1.0.0"
+  description: "Structured workflow system for Claude Code global agents"
+  
+paths:
+  templates: "~/.claude/orchestration/templates/"
+  workflows: "~/.claude/orchestration/workflows/"
+  checklists: "~/.claude/orchestration/checklists/"
+  tasks: "~/.claude/orchestration/tasks/"
+  agents: "~/.claude/orchestration/agents/"
+  
+workflow:
+  default_chain:
+    - product-owner     # Product vision and requirements
+    - market-researcher  # Market validation
+    - tech-lead     # Technical architecture
+    - designer      # UI/UX design
+    - ios-developer # Implementation
+  
+  parallel_allowed:
+    - [market-researcher, designer]  # Can run in parallel after PRD
+    - [multiple-developers]          # Multiple devs on different features
+    
+quality_gates:
+  prd_to_tech:
+    required:
+      - product_vision_defined
+      - success_metrics_quantified
+      - user_personas_complete
+      
+  tech_to_design:
+    required:
+      - architecture_documented
+      - api_specifications_defined
+      - performance_requirements_set
+      
+  design_to_dev:
+    required:
+      - all_screens_designed
+      - design_system_complete
+      - assets_exported
+      
+  dev_to_release:
+    required:
+      - all_tests_passing
+      - code_coverage_80_percent
+      - documentation_complete
+
+document_structure:
+  prd:
+    location: "Docs/Product/"
+    template: "prd-template.md"
+    sections:
+      product-owner: ["executive_summary", "product_vision", "success_metrics"]
+      market_researcher: ["market_analysis", "competitive_landscape", "validation"]
+      
+  technical_spec:
+    location: "Docs/Technical/"
+    template: "technical-spec-template.md"
+    owner: "tech-lead"
+    
+  design_spec:
+    location: "Docs/Design/"
+    template: "design-spec-template.md"
+    owner: "designer"
+    
+  story:
+    location: "Docs/Stories/"
+    template: "story-template.md"
+    owner: "ios-developer"
+    
+  project_context:
+    location: "./"
+    filename: "project-context.md"
+    update_trigger:
+      - agent_task_completion
+      - blocker_identified
+      - decision_made
+      - scope_change
+
+agent_configuration:
+  language:
+    user_interface: "korean"  # Response language to user
+    documentation: "english"   # Internal documentation language
+    
+  behavior:
+    load_resources: "runtime"  # Load templates/tasks at runtime
+    pre_load: false           # Don't pre-load resources
+    auto_update_context: true # Auto-update project-context.md
+    suggest_next_agent: true  # Suggest next agent in chain
+    
+  activation:
+    read_context_first: true
+    check_templates: true
+    validate_prerequisites: true
+
+monitoring:
+  metrics:
+    track_handoff_time: true
+    track_rework_rate: true
+    track_completion_rate: true
+    
+  logging:
+    debug_log: ".ai/orchestration-log.md"
+    error_log: ".ai/orchestration-errors.md"
+
+templates:
+  always_available:
+    - prd-template.md
+    - technical-spec-template.md
+    - design-spec-template.md
+    - story-template.md
+    - project-context-template.md
+    
+tasks:
+  init_project:
+    description: "Initialize new project with templates"
+    steps:
+      - create_project_structure
+      - copy_templates
+      - initialize_context
+      
+  execute_workflow:
+    description: "Execute agent workflow chain"
+    steps:
+      - validate_prerequisites
+      - activate_agent
+      - monitor_progress
+      - trigger_handoff
