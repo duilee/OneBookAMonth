@@ -16,7 +16,7 @@ final class Challenge {
     var targetPages: Int = 0
     var startDate: Date = Date()
     var endDate: Date = Date()
-    var status: ChallengeStatus = .active
+    var status: ChallengeStatus
     var createdDate: Date = Date()
     var completedDate: Date?
     var achievedMilestones: [String] = []
