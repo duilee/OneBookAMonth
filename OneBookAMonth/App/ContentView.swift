@@ -30,9 +30,9 @@ struct ContentView: View {
                 }
                 .tag(0)
             
-            ChallengeView()
+            ChallengeView(selectedTab: $selectedTab)
                 .tabItem {
-                    Label("Challenge", systemImage: "target")
+                    Label("Challenge", systemImage: "trophy")
                 }
                 .tag(1)
             
@@ -42,11 +42,6 @@ struct ContentView: View {
                 }
                 .tag(2)
             
-//            StatsViewModel(currentDate: $currentDate)
-//                .tabItem {
-//                    Label("Stats", systemImage: "chart.bar")
-//                }
-//                .tag(2)
         }
         .accentColor(.blue) // Customize selected tab color
         .onChange(of: selectedTab) { oldValue, newValue in
@@ -74,7 +69,7 @@ struct ContentView: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Item.self, Challenge.self, PageEntry.self, Memo.self, configurations: config)
+    let container = try! ModelContainer(for: Item.self, PageEntry.self, Memo.self, Challenge.self, configurations: config)
     let context = container.mainContext
     
     // Create sample data
@@ -85,14 +80,6 @@ struct ContentView: View {
     manager.addItem(name: "1984", numberOfPages: 328)
     manager.addItem(name: "1Q84", numberOfPages: 450)
     
-//    // Create sample challenge
-//    let challengeManager = ChallengeManager(modelContext: context)
-//    let _ = try! challengeManager.createChallenge(
-//        name: "March Reading Challenge",
-//        targetPages: 1000,
-//        startDate: Calendar.current.date(byAdding: .day, value: -10, to: Date()) ?? Date(),
-//        endDate: Calendar.current.date(byAdding: .day, value: 20, to: Date()) ?? Date()
-//    )
     
     return ContentView()
         .modelContainer(container)

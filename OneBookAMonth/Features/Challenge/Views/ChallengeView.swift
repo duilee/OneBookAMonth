@@ -2,399 +2,367 @@
 //  ChallengeView.swift
 //  OneBookAMonth
 //
-//  Created by delightroom on 3/30/25.
+//  Created by Claude on 2025-08-31.
 //
 
 import SwiftUI
 import SwiftData
 
 struct ChallengeView: View {
-    
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-    @Query private var challenges: [Challenge]
+    @Binding var selectedTab: Int
+    @State private var viewModel = ChallengeViewModel()
+    @State private var showCreateChallenge = false
+    @State private var showCancelConfirmation = false
     
-    @State private var itemManager: ItemManager?
-    @State private var challengeManager: ChallengeManager?
-    @State private var showingCreateChallenge = false
-    @State private var activeChallenge: Challenge?
-    @State private var challengeProgress: ChallengeProgress?
-    @State private var challengeStats: ChallengeStats?
-    @State private var refreshTrigger = UUID()
-    @State private var showingMilestoneAchievement = false
-    @State private var newMilestones: [Int] = []
+    private let primaryColor = Color(red: 25/255, green: 45/255, blue: 155/255)
     
     var body: some View {
-        NavigationView {
-            VStack {
-                // Header
-                HStack {
-                    Text("Challenge")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(Color.black)
-                    
-                    Spacer()
-                    
-                    if activeChallenge == nil {
-                        Button(action: {
-                            showingCreateChallenge = true
-                        }) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(ColorPalette().deep)
+        ScrollView {
+            VStack(spacing: 24) {
+                    // Header
+                    HStack {
+                        Text("Challenge")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(Color.black)
+                        
+                        Spacer()
+                        
+                        if viewModel.activeChallenge != nil {
+                            Menu {
+                                Button(role: .destructive) {
+                                    showCancelConfirmation = true
+                                } label: {
+                                    Label("Cancel Challenge", systemImage: "xmark.circle")
+                                }
+                            } label: {
+                                Image(systemName: "ellipsis.circle")
+                                    .font(.system(size: 20, weight: .medium))
+                                    .foregroundColor(primaryColor)
+                            }
                         }
                     }
-                }
-                .padding(.top, 12)
-                .padding(.horizontal, 16)
-                
-                ScrollView {
-                    VStack(spacing: 20) {
-                        if let challenge = activeChallenge,
-                           let progress = challengeProgress {
-                            // Active Challenge Card
+                    .padding(.horizontal)
+                    .padding(.top, 10)
+                    
+                    if let challenge = viewModel.activeChallenge,
+                       let progress = viewModel.challengeProgress {
+                        // Active Challenge Content
+                        VStack(spacing: 24) {
+                            // Progress Ring
+                            ChallengeProgressRing(
+                                progress: progress.progress,
+                                pagesRead: progress.pagesRead,
+                                targetPages: progress.targetPages,
+                                size: 220
+                            )
+                            .padding(.vertical, 20)
+                            
+                            // Motivational Message
+                            Text(viewModel.getMotivationalMessage())
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                            
+                            // Today's Progress
+                            HStack(spacing: 20) {
+                                TodayProgressCard(
+                                    pagesRead: viewModel.todayPages,
+                                    dailyGoal: progress.dailyPagesNeeded
+                                )
+                                
+                                StreakCard(streak: progress.currentStreak)
+                            }
+                            .padding(.horizontal)
+                            
+                            // Notification Settings Section
+                            VStack(spacing: 16) {
+                                Text("Reading Reminders")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                NotificationSettingsCard(
+                                    challenge: challenge,
+                                    viewModel: viewModel
+                                )
+                            }
+                            .padding(.horizontal)
+                            
+                            // Challenge Details Card
                             ChallengeCard(
                                 challenge: challenge,
-                                progress: progress,
-                                stats: challengeStats
-                            )
-                            .padding(.horizontal, 16)
-                            
-                            // Progress Details
-                            ChallengeProgressDetails(
-                                challenge: challenge,
                                 progress: progress
                             )
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal)
                             
-                            // Milestones Section
-                            MilestonesSection(
-                                challenge: challenge,
-                                progress: progress
-                            )
-                            .padding(.horizontal, 16)
-                            
-                        } else {
-                            // No Active Challenge State
-                            NoActiveChallengeView {
-                                showingCreateChallenge = true
+                            // Quick Stats
+                            VStack(spacing: 16) {
+                                Text("Challenge Stats")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                
+                                LazyVGrid(columns: [
+                                    GridItem(.flexible()),
+                                    GridItem(.flexible())
+                                ], spacing: 16) {
+                                    QuickStatCard(
+                                        title: "Avg. Daily",
+                                        value: "\(Int(progress.averagePagesPerDay))",
+                                        subtitle: "pages/day",
+                                        icon: "chart.line.uptrend.xyaxis",
+                                        color: .blue
+                                    )
+                                    
+                                    QuickStatCard(
+                                        title: "Reading Days",
+                                        value: "\(progress.readingDays)",
+                                        subtitle: "of \(progress.daysElapsed)",
+                                        icon: "calendar",
+                                        color: .green
+                                    )
+                                    
+                                    QuickStatCard(
+                                        title: "Status",
+                                        value: viewModel.getStatusText(),
+                                        subtitle: "",
+                                        icon: "flag.fill",
+                                        color: viewModel.getStatusColor()
+                                    )
+                                    
+                                    QuickStatCard(
+                                        title: "Time Left",
+                                        value: "\(progress.daysRemaining)",
+                                        subtitle: "days",
+                                        icon: "clock.fill",
+                                        color: .orange
+                                    )
+                                }
                             }
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal)
                         }
-                        
-                        Spacer(minLength: 100) // Bottom padding for tab bar
+                    } else {
+                        // No Active Challenge
+                        VStack(spacing: 24) {
+                            Spacer(minLength: 60)
+                            
+                            Image(systemName: "trophy.circle")
+                                .font(.system(size: 80))
+                                .foregroundColor(.gray.opacity(0.3))
+                            
+                            VStack(spacing: 12) {
+                                Text("No Active Challenge")
+                                    .font(.system(size: 24, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                
+                                Text("Start a reading challenge to track your progress and stay motivated")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal, 40)
+                            }
+                            
+                            Button(action: {
+                                showCreateChallenge = true
+                            }) {
+                                HStack {
+                                    Image(systemName: "plus.circle.fill")
+                                    Text("Create Challenge")
+                                        .font(.system(size: 16, weight: .semibold))
+                                }
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 24)
+                                .padding(.vertical, 14)
+                                .background(primaryColor)
+                                .cornerRadius(25)
+                            }
+                            
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity)
                     }
-                }
             }
-            .background(Color(.systemGroupedBackground))
-            .onAppear {
-                setupManagers()
-                loadActiveChallenge()
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .NSManagedObjectContextDidSave)) { _ in
-                loadActiveChallenge()
-            }
-            .sheet(isPresented: $showingCreateChallenge) {
-                CreateChallengeView()
-                    .onDisappear {
-                        loadActiveChallenge()
-                    }
-            }
-            .alert("Milestone Achieved!", isPresented: $showingMilestoneAchievement) {
-                Button("Awesome!") {
-                    newMilestones.removeAll()
-                }
-            } message: {
-                if newMilestones.count == 1 {
-                    Text("Congratulations! You've reached \(newMilestones.first!)% of your challenge goal!")
-                } else if newMilestones.count > 1 {
-                    Text("Amazing! You've achieved multiple milestones: \(newMilestones.map { "\($0)%" }.joined(separator: ", "))")
-                }
+            .padding(.bottom, 60)
+        }
+        .onAppear {
+            viewModel.setup(with: modelContext)
+        }
+        .onChange(of: selectedTab) { oldValue, newValue in
+            // Refresh when Challenge tab (tag 1) is selected
+            if newValue == 1 {
+                viewModel.refreshData()
             }
         }
-    }
-    
-    // MARK: - Private Methods
-    
-    private func setupManagers() {
-        if itemManager == nil {
-            itemManager = ItemManager(modelContext: modelContext)
-        }
-        if challengeManager == nil {
-            challengeManager = ChallengeManager(modelContext: modelContext)
-        }
-    }
-    
-    private func loadActiveChallenge() {
-        guard let manager = challengeManager else { return }
-        
-        activeChallenge = manager.getActiveChallenge()
-        
-        if let challenge = activeChallenge {
-            let progress = manager.calculateChallengeProgress(challenge, items: items)
-            challengeProgress = progress
-            challengeStats = manager.getChallengeStats(challenge, items: items)
-            
-            // Check for new milestones and show celebration
-            if !progress.newMilestones.isEmpty {
-                newMilestones = progress.newMilestones
-                showingMilestoneAchievement = true
+        .sheet(isPresented: $showCreateChallenge) {
+            CreateChallengeView(
+                isPresented: $showCreateChallenge,
+                viewModel: viewModel
+            )
+            .onDisappear {
+                viewModel.refreshData()
             }
-            
-            // Update completion status
-            manager.updateChallengeCompletion(challenge, currentPages: progress.currentPages)
         }
-        
-        refreshTrigger = UUID()
+        .alert("Cancel Challenge", isPresented: $showCancelConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Yes, Cancel Challenge", role: .destructive) {
+                viewModel.cancelChallenge()
+            }
+        } message: {
+            Text("Are you sure you want to cancel this challenge? This action cannot be undone.")
+        }
     }
 }
 
-// MARK: - Supporting Views
-
-private struct NoActiveChallengeView: View {
-    let onCreateChallenge: () -> Void
+struct TodayProgressCard: View {
+    let pagesRead: Int
+    let dailyGoal: Int
+    
+    private var progress: Double {
+        guard dailyGoal > 0 else { return 0 }
+        return min(1.0, Double(pagesRead) / Double(dailyGoal))
+    }
     
     var body: some View {
-        VStack(spacing: 24) {
-            // Illustration
-            Image(systemName: "target")
-                .font(.system(size: 60))
-                .foregroundColor(ColorPalette().medium)
-                .padding(.top, 40)
-            
-            VStack(spacing: 12) {
-                Text("No Active Challenge")
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundColor(.primary)
-                
-                Text("Set a reading goal and track your progress with challenges!")
-                    .font(.system(size: 16))
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .center) {
+                Image(systemName: "book.pages.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(.blue)
+                    .frame(width: 14, height: 14)
+                Text("Today")
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 20)
             }
             
-            Button(action: onCreateChallenge) {
-                HStack {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 18, weight: .medium))
-                    
-                    Text("Create Challenge")
-                        .font(.system(size: 18, weight: .semibold))
-                }
-                .foregroundColor(.white)
-                .padding(.horizontal, 32)
-                .padding(.vertical, 14)
-                .background(ColorPalette().deep)
-                .cornerRadius(16)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(pagesRead)")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.primary)
+                Text("of \(dailyGoal) pages")
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
             }
-            .padding(.bottom, 40)
+            
+            // Progress bar
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.gray.opacity(0.2))
+                        .frame(height: 4)
+                    
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(progress >= 1.0 ? Color.green : Color.blue)
+                        .frame(width: geometry.size.width * progress, height: 4)
+                }
+            }
+            .frame(height: 4)
         }
-        .frame(maxWidth: .infinity)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-        .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 1)
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .frame(height: 100)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
     }
 }
 
-private struct ChallengeProgressDetails: View {
-    let challenge: Challenge
-    let progress: ChallengeProgress
+struct StreakCard: View {
+    let streak: Int
     
     var body: some View {
-        VStack(spacing: 16) {
-            // Header
-            HStack {
-                Label {
-                    Text("Details")
-                        .font(.system(size: 18, weight: .semibold))
-                } icon: {
-                    Image(systemName: "info.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundColor(ColorPalette().deep)
-                }
-                Spacer()
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .center) {
+                Image(systemName: "flame.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(.orange)
+                    .frame(width: 14, height: 14)
+                Text("Streak")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.secondary)
             }
             
-            // Details Grid
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
-                DetailStatView(
-                    title: "Days Remaining",
-                    value: "\(progress.daysRemaining)",
-                    icon: "calendar",
-                    color: progress.daysRemaining > 7 ? ColorPalette().medium : .orange
-                )
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text("\(streak)")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.primary)
+                    Text("days")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
                 
-                DetailStatView(
-                    title: "Pages Left",
-                    value: "\(progress.pagesRemaining)",
-                    icon: "book.pages",
-                    color: ColorPalette().medium
-                )
-                
-                DetailStatView(
-                    title: "Daily Goal",
-                    value: "\(Int(progress.dailyAverageNeeded.rounded()))",
-                    icon: "target",
-                    color: progress.dailyAverageNeeded > 50 ? .orange : ColorPalette().deep
-                )
-                
-                DetailStatView(
-                    title: "Progress",
-                    value: "\(Int(progress.progressPercentage * 100))%",
-                    icon: "chart.bar.fill",
-                    color: .green
-                )
+                Text(getStreakMessage())
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
             }
         }
-        .padding(20)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-        .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 1)
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .frame(height: 100)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+        )
+    }
+    
+    private func getStreakMessage() -> String {
+        switch streak {
+        case 0: return "Start reading today!"
+        case 1: return "Great start!"
+        case 2...6: return "Building momentum!"
+        case 7...13: return "One week strong!"
+        case 14...29: return "Two weeks! Amazing!"
+        case 30...59: return "One month streak!"
+        default: return "Legendary reader!"
+        }
     }
 }
 
-private struct DetailStatView: View {
+struct QuickStatCard: View {
     let title: String
     let value: String
+    let subtitle: String
     let icon: String
     let color: Color
     
     var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundColor(color)
-            
-            Text(value)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.primary)
-            
-            Text(title)
-                .font(.system(size: 12))
-                .foregroundColor(.secondary)
-        }
-        .padding(.vertical, 12)
-        .frame(maxWidth: .infinity)
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
-    }
-}
-
-private struct MilestonesSection: View {
-    let challenge: Challenge
-    let progress: ChallengeProgress
-    
-    var body: some View {
-        VStack(spacing: 16) {
-            // Header
+        VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Label {
-                    Text("Milestones")
-                        .font(.system(size: 18, weight: .semibold))
-                } icon: {
-                    Image(systemName: "rosette")
-                        .font(.system(size: 16))
-                        .foregroundColor(ColorPalette().deep)
-                }
+                Image(systemName: icon)
+                    .font(.system(size: 12))
+                    .foregroundColor(color)
+                Text(title)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.secondary)
                 Spacer()
             }
             
-            // Milestones Grid
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 12) {
-                ForEach(Challenge.milestonePercentages, id: \.self) { percentage in
-                    MilestoneView(
-                        percentage: percentage,
-                        targetPages: challenge.targetPages,
-                        currentPages: progress.currentPages,
-                        isAchieved: challenge.achievedMilestones.contains("\(percentage)%")
-                    )
+            VStack(alignment: .leading, spacing: 2) {
+                Text(value)
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.primary)
+                
+                if !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.system(size: 10))
+                        .foregroundColor(.secondary)
                 }
             }
         }
-        .padding(20)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-        .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 1)
-    }
-}
-
-private struct MilestoneView: View {
-    let percentage: Int
-    let targetPages: Int
-    let currentPages: Int
-    let isAchieved: Bool
-    
-    private var pagesNeeded: Int {
-        Int(Double(targetPages) * Double(percentage) / 100.0)
-    }
-    
-    var body: some View {
-        VStack(spacing: 8) {
-            ZStack {
-                Circle()
-                    .fill(isAchieved ? .green : Color(.systemGray5))
-                    .frame(width: 50, height: 50)
-                
-                Image(systemName: isAchieved ? "checkmark" : "target")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(isAchieved ? .white : .secondary)
-            }
-            
-            Text("\(percentage)%")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(isAchieved ? .green : .primary)
-            
-            Text("\(pagesNeeded) pages")
-                .font(.system(size: 10))
-                .foregroundColor(.secondary)
-        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 2)
+        )
     }
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Item.self, Challenge.self, PageEntry.self, Memo.self, configurations: config)
-    let context = container.mainContext
-    
-    // Create sample challenge
-    let challenge = Challenge(
-        name: "March Reading Challenge",
-        targetPages: 1000,
-        startDate: Calendar.current.date(byAdding: .day, value: -10, to: Date()) ?? Date(),
-        endDate: Calendar.current.date(byAdding: .day, value: 20, to: Date()) ?? Date()
-    )
-    context.insert(challenge)
-    
-    // Create sample books with page entries to show realistic progress
-    let book1 = Item(
-        timestamp: Calendar.current.date(byAdding: .day, value: -15, to: Date()) ?? Date(),
-        name: "Sample Book 1",
-        numberOfPages: 300
-    )
-    book1.currentPage = 180
-    book1.addPagesForDate(Calendar.current.date(byAdding: .day, value: -5, to: Date()) ?? Date(), book1, pages: 50)
-    book1.addPagesForDate(Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date(), book1, pages: 120)
-    book1.addPagesForDate(Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date(), book1, pages: 180)
-    context.insert(book1)
-    
-    let book2 = Item(
-        timestamp: Calendar.current.date(byAdding: .day, value: -12, to: Date()) ?? Date(),
-        name: "Sample Book 2",
-        numberOfPages: 450
-    )
-    book2.currentPage = 280
-    book2.addPagesForDate(Calendar.current.date(byAdding: .day, value: -8, to: Date()) ?? Date(), book2, pages: 80)
-    book2.addPagesForDate(Calendar.current.date(byAdding: .day, value: -4, to: Date()) ?? Date(), book2, pages: 200)
-    book2.addPagesForDate(Date(), book2, pages: 280)
-    context.insert(book2)
-    
-    // Save the context to ensure all relationships are properly set up
-    try? context.save()
-    
-    return ChallengeView()
-        .modelContainer(container)
+    ChallengeView(selectedTab: .constant(1))
+        .modelContainer(for: [Challenge.self, Item.self])
 }

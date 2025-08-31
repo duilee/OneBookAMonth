@@ -562,10 +562,10 @@ extension ItemManager {
     }
 }
 
-// MARK: - Challenge Support Extension
+// MARK: - Additional Support Extension
 extension ItemManager {
     
-    /// Calculate total pages read within a date range for challenge progress
+    /// Calculate total pages read within a date range
     func getTotalPagesReadInDateRange(for items: [Item], startDate: Date, endDate: Date) -> Int {
         return items.reduce(0) { total, item in
             let itemPages = item.pageEntries

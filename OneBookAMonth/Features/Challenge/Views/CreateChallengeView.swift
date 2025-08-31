@@ -2,84 +2,181 @@
 //  CreateChallengeView.swift
 //  OneBookAMonth
 //
-//  Created by delightroom on 3/30/25.
+//  Created by Claude on 2025-08-31.
 //
 
 import SwiftUI
-import SwiftData
 
 struct CreateChallengeView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) private var dismiss
+    @Binding var isPresented: Bool
+    let viewModel: ChallengeViewModel
     
-    @State private var challengeName = ""
-    @State private var targetPages = ""
-    @State private var selectedDuration = ChallengeDuration.month
-    @State private var startDate = Date()
-    @State private var showValidationAlert = false
-    @State private var validationMessage = ""
-    @State private var isSaving = false
-    @State private var challengeManager: ChallengeManager?
+    @State private var challengeName: String = "My Reading Challenge"
+    @State private var startDate = Calendar.current.startOfDay(for: Date())
+    @State private var endDate = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: 29, to: Date()) ?? Date())
+    @State private var targetPages: String = "300"
+    @State private var showError = false
+    @State private var errorMessage = ""
     
-    private var endDate: Date {
-        switch selectedDuration {
-        case .week:
-            return Calendar.current.date(byAdding: .weekOfYear, value: 1, to: startDate) ?? startDate
-        case .twoWeeks:
-            return Calendar.current.date(byAdding: .weekOfYear, value: 2, to: startDate) ?? startDate
-        case .month:
-            return Calendar.current.date(byAdding: .month, value: 1, to: startDate) ?? startDate
-        case .twoMonths:
-            return Calendar.current.date(byAdding: .month, value: 2, to: startDate) ?? startDate
-        case .custom:
-            return Calendar.current.date(byAdding: .month, value: 1, to: startDate) ?? startDate
-        }
-    }
+    private let primaryColor = Color(red: 25/255, green: 45/255, blue: 155/255)
     
-    private var canSave: Bool {
-        !challengeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-        !targetPages.isEmpty &&
-        Int(targetPages) != nil &&
-        Int(targetPages) ?? 0 > 0
+    private var duration: Int {
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.day], from: startDate, to: endDate)
+        return max(1, (components.day ?? 0) + 1)
     }
     
     private var dailyPagesNeeded: Int {
-        guard let pages = Int(targetPages) else { return 0 }
-        let days = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 1
-        return max(1, Int(ceil(Double(pages) / Double(days))))
+        guard let pages = Int(targetPages), pages > 0 else { return 0 }
+        return Int(ceil(Double(pages) / Double(duration)))
+    }
+    
+    private var isFormValid: Bool {
+        !challengeName.isEmpty && 
+        Int(targetPages) != nil && 
+        Int(targetPages)! > 0 &&
+        endDate > startDate
     }
     
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 24) {
+                    // Header illustration
+                    VStack(spacing: 12) {
+                        Image(systemName: "trophy.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(primaryColor)
+                        
+                        Text("Create a Reading Challenge")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.primary)
+                        
+                        Text("Set a goal and track your reading progress")
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.top, 20)
                     
-                    // Challenge Name Section
-                    challengeNameSection
+                    // Form fields
+                    VStack(spacing: 20) {
+                        // Challenge Name
+                        VStack(alignment: .leading, spacing: 8) {
+                            Label("Challenge Name", systemImage: "pencil")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                            
+                            TextField("e.g., Summer Reading Challenge", text: $challengeName)
+                                .textFieldStyle(CustomTextFieldStyle())
+                        }
+                        
+                        // Duration Section
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label("Duration", systemImage: "clock")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                            
+                            // Quick Duration Options
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 10) {
+                                    DurationChip(label: "1 Week", days: 7, startDate: startDate, endDate: $endDate)
+                                    DurationChip(label: "2 Weeks", days: 14, startDate: startDate, endDate: $endDate)
+                                    DurationChip(label: "1 Month", days: 30, startDate: startDate, endDate: $endDate)
+                                }
+                            }
+                            
+                            // Date Selection
+                            HStack(spacing: 16) {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Start Date")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.secondary)
+                                    
+                                    DatePicker("", selection: $startDate, displayedComponents: .date)
+                                        .labelsHidden()
+                                        .datePickerStyle(.compact)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(12)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(Color.gray.opacity(0.1))
+                                        )
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("End Date")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(.secondary)
+                                    
+                                    DatePicker("", selection: $endDate, in: startDate..., displayedComponents: .date)
+                                    .labelsHidden()
+                                    .datePickerStyle(.compact)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(12)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(Color.gray.opacity(0.1))
+                                    )
+                                }
+                            }
+                        }
+                        
+                        // Target Pages
+                        VStack(alignment: .leading, spacing: 12) {
+                            Label("Target Pages", systemImage: "book.pages")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                            
+                            // Quick Pages Options
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 10) {
+                                    PagesChip(label: "100 pages", pages: 100, targetPages: $targetPages)
+                                    PagesChip(label: "200 pages", pages: 200, targetPages: $targetPages)
+                                    PagesChip(label: "300 pages", pages: 300, targetPages: $targetPages)
+                                }
+                            }
+                            
+                            TextField("Enter target pages", text: $targetPages)
+                                .keyboardType(.numberPad)
+                                .textFieldStyle(CustomTextFieldStyle())
+                        }
+                        
+                        // Challenge Summary Card
+                        if isFormValid {
+                            VStack(spacing: 12) {
+                                HStack {
+                                    Image(systemName: "info.circle.fill")
+                                        .foregroundColor(primaryColor)
+                                    Text("Challenge Summary")
+                                        .font(.system(size: 16, weight: .semibold))
+                                    Spacer()
+                                }
+                                
+                                VStack(spacing: 8) {
+                                    SummaryRow(label: "Duration", value: "\(duration) days")
+                                    SummaryRow(label: "Daily Goal", value: "\(dailyPagesNeeded) pages/day")
+                                    SummaryRow(label: "Total Pages", value: "\(targetPages) pages")
+                                }
+                            }
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(primaryColor.opacity(0.1))
+                            )
+                            .transition(.scale.combined(with: .opacity))
+                        }
+                    }
+                    .padding(.horizontal)
                     
-                    // Target Pages Section
-                    targetPagesSection
-                    
-                    // Duration Section
-                    durationSection
-                    
-                    // Date Range Section
-                    dateRangeSection
-                    
-                    // Preview Section
-                    challengePreviewSection
-                    
-                    Spacer(minLength: 60)
+                    Spacer(minLength: 20)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
             }
-            .navigationTitle("New Challenge")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        dismiss()
+                        isPresented = false
                     }
                 }
                 
@@ -87,359 +184,138 @@ struct CreateChallengeView: View {
                     Button("Create") {
                         createChallenge()
                     }
-                    .disabled(!canSave || isSaving)
-                    .fontWeight(.semibold)
+                    .font(.system(size: 16, weight: .semibold))
+                    .disabled(!isFormValid)
                 }
             }
-        }
-        .alert("Invalid Challenge", isPresented: $showValidationAlert) {
-            Button("OK") { }
-        } message: {
-            Text(validationMessage)
-        }
-        .onAppear {
-            if challengeManager == nil {
-                challengeManager = ChallengeManager(modelContext: modelContext)
+            .alert("Error", isPresented: $showError) {
+                Button("OK") { }
+            } message: {
+                Text(errorMessage)
             }
         }
     }
-    
-    // MARK: - View Components
-    
-    private var challengeNameSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label {
-                Text("Challenge Name")
-                    .font(.system(size: 18, weight: .semibold))
-            } icon: {
-                Image(systemName: "target")
-                    .font(.system(size: 16))
-                    .foregroundColor(ColorPalette().deep)
-            }
-            
-            TextField("e.g., March Reading Challenge", text: $challengeName)
-                .textFieldStyle(.roundedBorder)
-                .font(.system(size: 16))
-        }
-        .padding(20)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-        .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 1)
-    }
-    
-    private var targetPagesSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label {
-                Text("Target Pages")
-                    .font(.system(size: 18, weight: .semibold))
-            } icon: {
-                Image(systemName: "book.pages")
-                    .font(.system(size: 16))
-                    .foregroundColor(ColorPalette().deep)
-            }
-            
-            HStack {
-                TextField("1000", text: $targetPages)
-                    .textFieldStyle(.roundedBorder)
-                    .font(.system(size: 16))
-                    .keyboardType(.numberPad)
-                
-                Text("pages")
-                    .font(.system(size: 16))
-                    .foregroundColor(.secondary)
-            }
-            
-            // Quick preset buttons
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 8) {
-                ForEach([300, 500, 750, 1000], id: \.self) { pages in
-                    Button(action: {
-                        targetPages = "\(pages)"
-                    }) {
-                        Text("\(pages)")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(targetPages == "\(pages)" ? .white : ColorPalette().deep)
-                            .padding(.vertical, 8)
-                            .frame(maxWidth: .infinity)
-                            .background(targetPages == "\(pages)" ? ColorPalette().deep : Color(.systemGray6))
-                            .cornerRadius(8)
-                    }
-                }
-            }
-        }
-        .padding(20)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-        .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 1)
-    }
-    
-    private var durationSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label {
-                Text("Duration")
-                    .font(.system(size: 18, weight: .semibold))
-            } icon: {
-                Image(systemName: "calendar")
-                    .font(.system(size: 16))
-                    .foregroundColor(ColorPalette().deep)
-            }
-            
-            Picker("Duration", selection: $selectedDuration) {
-                ForEach(ChallengeDuration.allCases, id: \.self) { duration in
-                    Text(duration.displayName)
-                        .tag(duration)
-                }
-            }
-            .pickerStyle(.segmented)
-            
-            HStack {
-                Image(systemName: "info.circle")
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary)
-                
-                Text(selectedDuration.description)
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(20)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-        .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 1)
-    }
-    
-    private var dateRangeSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label {
-                Text("Start Date")
-                    .font(.system(size: 18, weight: .semibold))
-            } icon: {
-                Image(systemName: "calendar.badge.plus")
-                    .font(.system(size: 16))
-                    .foregroundColor(ColorPalette().deep)
-            }
-            
-            DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
-                .datePickerStyle(.compact)
-                .font(.system(size: 16))
-            
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Start Date")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
-                    
-                    Text(startDate, format: .dateTime.month(.wide).day().year())
-                        .font(.system(size: 14))
-                        .foregroundColor(.primary)
-                }
-                
-                Spacer()
-                
-                Image(systemName: "arrow.right")
-                    .font(.system(size: 12))
-                    .foregroundColor(.secondary)
-                
-                Spacer()
-                
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("End Date")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.secondary)
-                    
-                    Text(endDate, format: .dateTime.month(.wide).day().year())
-                        .font(.system(size: 14))
-                        .foregroundColor(.primary)
-                }
-            }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .background(Color(.systemGray6))
-            .cornerRadius(8)
-        }
-        .padding(20)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-        .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 1)
-    }
-    
-    private var challengePreviewSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Label {
-                Text("Challenge Preview")
-                    .font(.system(size: 18, weight: .semibold))
-            } icon: {
-                Image(systemName: "eye")
-                    .font(.system(size: 16))
-                    .foregroundColor(ColorPalette().deep)
-            }
-            
-            VStack(spacing: 12) {
-                // Challenge name
-                if !challengeName.isEmpty {
-                    HStack {
-                        Text("Name:")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text(challengeName)
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.primary)
-                    }
-                }
-                
-                // Target pages
-                if let pages = Int(targetPages), pages > 0 {
-                    HStack {
-                        Text("Target:")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text("\(pages) pages")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.primary)
-                    }
-                }
-                
-                // Daily average
-                if Int(targetPages) != nil {
-                    HStack {
-                        Text("Daily Goal:")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        Text("\(dailyPagesNeeded) pages/day")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(dailyPagesNeeded > 50 ? .orange : ColorPalette().deep)
-                    }
-                }
-                
-                // Duration
-                let totalDays = Calendar.current.dateComponents([.day], from: startDate, to: endDate).day ?? 0
-                HStack {
-                    Text("Duration:")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Text("\(totalDays) days")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.primary)
-                }
-            }
-            .padding(.vertical, 8)
-        }
-        .padding(20)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-        .shadow(color: Color.black.opacity(0.02), radius: 4, x: 0, y: 1)
-    }
-    
-    // MARK: - Actions
     
     private func createChallenge() {
-        guard canSave else { return }
+        guard let pages = Int(targetPages) else { return }
         
-        guard let pages = Int(targetPages), pages > 0 else {
-            validationMessage = "Please enter a valid number of pages greater than 0."
-            showValidationAlert = true
-            return
-        }
+        // Ensure dates are at start of day for consistent calculation
+        let calendar = Calendar.current
+        let normalizedStartDate = calendar.startOfDay(for: startDate)
+        let normalizedEndDate = calendar.startOfDay(for: endDate)
         
-        guard let manager = challengeManager else {
-            validationMessage = "Challenge manager not available. Please try again."
-            showValidationAlert = true
-            return
-        }
+        let success = viewModel.createChallenge(
+            name: challengeName,
+            startDate: normalizedStartDate,
+            endDate: normalizedEndDate,
+            targetPages: pages
+        )
         
-        isSaving = true
-        
-        Task {
-            do {
-                // Check if there's already an active challenge (moved to background)
-                let existingChallenge = manager.getActiveChallenge()
-                if existingChallenge != nil {
-                    await MainActor.run {
-                        isSaving = false
-                        validationMessage = "You already have an active challenge. Complete or cancel it before creating a new one."
-                        showValidationAlert = true
-                    }
-                    return
-                }
-                
-                // Create the challenge
-                let name = challengeName.trimmingCharacters(in: .whitespacesAndNewlines)
-                let _ = try manager.createChallenge(
-                    name: name,
-                    targetPages: pages,
-                    startDate: startDate,
-                    endDate: endDate
-                )
-                
-                await MainActor.run {
-                    isSaving = false
-                    dismiss()
-                }
-                
-            } catch {
-                await MainActor.run {
-                    isSaving = false
-                    validationMessage = "Failed to create challenge. Please try again."
-                    showValidationAlert = true
-                }
-                print("Error creating challenge: \(error)")
-            }
+        if success {
+            isPresented = false
+        } else {
+            errorMessage = viewModel.errorMessage ?? "Failed to create challenge"
+            showError = true
         }
     }
 }
 
-// MARK: - Supporting Types
+struct CustomTextFieldStyle: TextFieldStyle {
+    func _body(configuration: TextField<Self._Label>) -> some View {
+        configuration
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.gray.opacity(0.1))
+            )
+    }
+}
 
-enum ChallengeDuration: String, CaseIterable {
-    case week = "1W"
-    case twoWeeks = "2W"
-    case month = "1M"
-    case twoMonths = "2M"
-    case custom = "Custom"
+struct SummaryRow: View {
+    let label: String
+    let value: String
     
-    var displayName: String {
-        switch self {
-        case .week:
-            return "1 Week"
-        case .twoWeeks:
-            return "2 Weeks"
-        case .month:
-            return "1 Month"
-        case .twoMonths:
-            return "2 Months"
-        case .custom:
-            return "Custom"
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+            Spacer()
+            Text(value)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.primary)
         }
     }
+}
+
+// MARK: - Chip Components
+
+struct DurationChip: View {
+    let label: String
+    let days: Int?
+    let startDate: Date
+    @Binding var endDate: Date
     
-    var description: String {
-        switch self {
-        case .week:
-            return "Perfect for quick reading sprints"
-        case .twoWeeks:
-            return "Balanced challenge duration"
-        case .month:
-            return "Most popular challenge length"
-        case .twoMonths:
-            return "For ambitious reading goals"
-        case .custom:
-            return "Set your own timeline"
+    private var isSelected: Bool {
+        guard let days = days else { return false }
+        let calendar = Calendar.current
+        let expectedEnd = calendar.date(byAdding: .day, value: days - 1, to: startDate) ?? startDate
+        return calendar.isDate(endDate, inSameDayAs: expectedEnd)
+    }
+    
+    var body: some View {
+        Button(action: {
+            if let days = days {
+                endDate = Calendar.current.date(byAdding: .day, value: days - 1, to: startDate) ?? startDate
+            }
+        }) {
+            Text(label)
+                .font(.system(size: 14, weight: .medium))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(isSelected ? Color(red: 25/255, green: 45/255, blue: 155/255) : Color.gray.opacity(0.1))
+                )
+                .foregroundColor(isSelected ? .white : Color(red: 25/255, green: 45/255, blue: 155/255))
         }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct PagesChip: View {
+    let label: String
+    let pages: Int?
+    @Binding var targetPages: String
+    
+    private var isSelected: Bool {
+        guard let pages = pages else { return false }
+        return targetPages == String(pages)
+    }
+    
+    var body: some View {
+        Button(action: {
+            if let pages = pages {
+                targetPages = String(pages)
+            }
+        }) {
+            Text(label)
+                .font(.system(size: 14, weight: .medium))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(isSelected ? Color(red: 25/255, green: 45/255, blue: 155/255) : Color.gray.opacity(0.1))
+                )
+                .foregroundColor(isSelected ? .white : Color(red: 25/255, green: 45/255, blue: 155/255))
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: Item.self, Challenge.self, PageEntry.self, Memo.self, configurations: config)
-    
-    return CreateChallengeView()
-        .modelContainer(container)
+    CreateChallengeView(
+        isPresented: .constant(true),
+        viewModel: ChallengeViewModel()
+    )
 }

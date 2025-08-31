@@ -2,267 +2,294 @@
 //  ChallengeManager.swift
 //  OneBookAMonth
 //
-//  Created by delightroom on 3/30/25.
+//  Created by Claude on 2025-08-31.
 //
 
+import Foundation
 import SwiftData
 import SwiftUI
 
-class ChallengeManager {
+class ChallengeManager: ObservableObject {
     private let modelContext: ModelContext
-    private var calendar: Calendar {
-        return Calendar.current
-    }
+    private let itemManager: ItemManager
+    
+    @Published var activeChallenge: Challenge?
+    @Published var challenges: [Challenge] = []
     
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
+        self.itemManager = ItemManager(modelContext: modelContext)
+        loadChallenges()
     }
     
-    // MARK: - Challenge Creation and Management
+    // MARK: - Challenge CRUD Operations
     
-    /// Create a new challenge
-    func createChallenge(name: String, targetPages: Int, startDate: Date, endDate: Date) throws -> Challenge {
-        let challenge = Challenge(name: name, targetPages: targetPages, startDate: startDate, endDate: endDate)
+    func createChallenge(name: String, startDate: Date, endDate: Date, targetPages: Int) -> Challenge {
+        let challenge = Challenge(
+            name: name,
+            startDate: startDate,
+            endDate: endDate,
+            targetPages: targetPages
+        )
+        
+        // Store initial pages read to track progress from this point
+        let items = fetchAllItems()
+        challenge.pagesReadAtStart = itemManager.getTotalPagesReadInDateRange(
+            for: items,
+            startDate: Date.distantPast,
+            endDate: startDate
+        )
+        
         modelContext.insert(challenge)
-        try saveContext()
+        saveContext()
+        loadChallenges()
+        
         return challenge
     }
     
-    /// Get the current active challenge
-    func getActiveChallenge() -> Challenge? {
-        let descriptor = FetchDescriptor<Challenge>(
-            sortBy: [SortDescriptor(\.createdDate, order: .reverse)]
-        )
-        
-        do {
-            let challenges = try modelContext.fetch(descriptor)
-            return challenges.first(where: { $0.status == .active })
-        } catch {
-            print("Error fetching active challenge: \(error)")
-            return nil
-        }
-    }
-    
-    /// Get all challenges
-    func getAllChallenges() -> [Challenge] {
-        let descriptor = FetchDescriptor<Challenge>(
-            sortBy: [SortDescriptor(\.createdDate, order: .reverse)]
-        )
-        
-        do {
-            return try modelContext.fetch(descriptor)
-        } catch {
-            print("Error fetching challenges: \(error)")
-            return []
-        }
-    }
-    
-    /// Update challenge status
-    func updateChallengeStatus(_ challenge: Challenge, status: ChallengeStatus) {
-        challenge.status = status
-        if status == .completed && challenge.completedDate == nil {
-            challenge.completedDate = Date()
-        }
-        do {
-            try saveContext()
-        } catch {
-            print("Error updating challenge status: \(error)")
-        }
-    }
-    
-    /// Delete a challenge
     func deleteChallenge(_ challenge: Challenge) {
         modelContext.delete(challenge)
-        do {
-            try saveContext()
-        } catch {
-            print("Error deleting challenge: \(error)")
-        }
+        saveContext()
+        loadChallenges()
     }
     
-    // MARK: - Progress Tracking
+    func cancelChallenge(_ challenge: Challenge) {
+        challenge.cancel()
+        saveContext()
+        loadChallenges()
+    }
     
-    /// Calculate current progress for a challenge using ItemManager data
-    func calculateChallengeProgress(_ challenge: Challenge, items: [Item]) -> ChallengeProgress {
-        let startDate = challenge.startDate
-        let endDate = challenge.endDate
+    // MARK: - Progress Calculation
+    
+    func calculateProgress(for challenge: Challenge) -> ChallengeProgress {
+        let items = fetchAllItems()
         
-        // Calculate total pages read within challenge period
-        let totalPagesRead = items.reduce(0) { total, item in
-            let itemPages = item.pageEntries
-                .filter { entry in
-                    entry.date >= startDate && entry.date <= endDate && entry.pagesRead > 0
-                }
-                .reduce(0) { $0 + $1.pagesRead }
-            return total + itemPages
-        }
+        // Get total pages read during challenge period
+        let pagesRead = itemManager.getTotalPagesReadInDateRange(
+            for: items,
+            startDate: challenge.startDate,
+            endDate: min(Date(), challenge.endDate)
+        )
         
-        // Calculate progress percentage
-        let progressPercentage = challenge.targetPages > 0 ? 
-            min(Double(totalPagesRead) / Double(challenge.targetPages), 1.0) : 0.0
+        // Calculate daily average
+        let readingDays = itemManager.getReadingDaysInRange(
+            for: items,
+            startDate: challenge.startDate,
+            endDate: min(Date(), challenge.endDate)
+        )
         
-        // Calculate days information
-        let today = Date()
-        let daysElapsed = max(0, calendar.dateComponents([.day], from: startDate, to: min(today, endDate)).day ?? 0)
-        let totalDays = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
-        let daysRemaining = max(0, calendar.dateComponents([.day], from: today, to: endDate).day ?? 0)
+        let averagePagesPerDay = readingDays.count > 0 ? 
+            Double(pagesRead) / Double(readingDays.count) : 0
         
-        // Calculate daily average needed to complete
-        let pagesRemaining = max(0, challenge.targetPages - totalPagesRead)
-        let dailyAverageNeeded = daysRemaining > 0 ? 
-            Double(pagesRemaining) / Double(daysRemaining) : 0.0
+        // Calculate pages needed per day
+        let daysRemaining = challenge.daysRemaining
+        let pagesRemaining = max(0, challenge.targetPages - pagesRead)
+        let dailyPagesNeeded = daysRemaining > 0 ? 
+            Int(ceil(Double(pagesRemaining) / Double(daysRemaining))) : 0
         
-        // Check for new milestones
-        let newMilestones = checkForNewMilestones(challenge, currentPages: totalPagesRead)
+        // Calculate streak
+        let currentStreak = itemManager.getReadingStreakInRange(
+            for: items,
+            startDate: challenge.startDate,
+            endDate: challenge.endDate
+        )
         
         return ChallengeProgress(
-            currentPages: totalPagesRead,
+            pagesRead: pagesRead,
             targetPages: challenge.targetPages,
-            progressPercentage: progressPercentage,
-            daysElapsed: daysElapsed,
+            progress: min(1.0, Double(pagesRead) / Double(challenge.targetPages)),
+            daysElapsed: challenge.daysElapsed,
             daysRemaining: daysRemaining,
-            totalDays: totalDays,
-            dailyAverageNeeded: dailyAverageNeeded,
-            newMilestones: newMilestones
+            averagePagesPerDay: averagePagesPerDay,
+            dailyPagesNeeded: dailyPagesNeeded,
+            currentStreak: currentStreak,
+            readingDays: readingDays.count
         )
     }
     
-    /// Check and award new milestones
-    private func checkForNewMilestones(_ challenge: Challenge, currentPages: Int) -> [Int] {
-        var newMilestones: [Int] = []
-        
-        for percentage in Challenge.milestonePercentages {
-            if challenge.shouldAwardMilestone(percentage, currentPages: currentPages) {
-                challenge.awardMilestone(percentage)
-                newMilestones.append(percentage)
-            }
-        }
-        
-        if !newMilestones.isEmpty {
-            do {
-                try saveContext()
-            } catch {
-                print("Error saving milestones: \(error)")
-            }
-        }
-        
-        return newMilestones
+    // MARK: - Daily Progress
+    
+    func getDailyProgress(for challenge: Challenge) -> [Date: Int] {
+        let items = fetchAllItems()
+        return itemManager.getDailyReadingData(
+            for: items,
+            startDate: challenge.startDate,
+            endDate: challenge.endDate
+        )
     }
     
-    /// Update challenge completion status
-    func updateChallengeCompletion(_ challenge: Challenge, currentPages: Int) {
-        challenge.checkCompletion(currentPages: currentPages)
-        do {
-            try saveContext()
-        } catch {
-            print("Error updating challenge completion: \(error)")
+    func getTodayPages(for challenge: Challenge) -> Int {
+        let items = fetchAllItems()
+        let todayData = itemManager.getDailyReadingData(
+            for: items,
+            startDate: Calendar.current.startOfDay(for: Date()),
+            endDate: Date()
+        )
+        return todayData.values.reduce(0, +)
+    }
+    
+    // MARK: - Status Management
+    
+    func checkAndUpdateAllChallenges() {
+        let items = fetchAllItems()
+        
+        for challenge in challenges where challenge.status == .active {
+            let progress = calculateProgress(for: challenge)
+            
+            if progress.pagesRead >= challenge.targetPages {
+                challenge.complete()
+            } else if challenge.isOverdue {
+                challenge.fail()
+            }
         }
+        
+        saveContext()
+        loadChallenges()
+    }
+    
+    func getActiveChallenge() -> Challenge? {
+        return challenges.first { $0.isActive }
+    }
+    
+    func getPendingChallenges() -> [Challenge] {
+        return challenges.filter { $0.isPending }
+    }
+    
+    func getCompletedChallenges() -> [Challenge] {
+        return challenges.filter { $0.status == .completed }
+    }
+    
+    func getFailedChallenges() -> [Challenge] {
+        return challenges.filter { $0.status == .failed }
+    }
+    
+    // MARK: - Chart Data
+    
+    func getChartData(for challenge: Challenge) -> [DailyChartData] {
+        let dailyData = getDailyProgress(for: challenge)
+        let calendar = Calendar.current
+        var chartData: [DailyChartData] = []
+        
+        var currentDate = challenge.startDate
+        let endDate = min(Date(), challenge.endDate)
+        var cumulativePages = 0
+        
+        while currentDate <= endDate {
+            let dayStart = calendar.startOfDay(for: currentDate)
+            let dayPages = dailyData[dayStart] ?? 0
+            cumulativePages += dayPages
+            
+            chartData.append(DailyChartData(
+                date: currentDate,
+                pagesRead: dayPages,
+                cumulativePages: cumulativePages
+            ))
+            
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? endDate
+        }
+        
+        return chartData
     }
     
     // MARK: - Analytics
     
-    /// Get challenge statistics
-    func getChallengeStats(_ challenge: Challenge, items: [Item]) -> ChallengeStats {
-        let progress = calculateChallengeProgress(challenge, items: items)
-        let today = Date()
+    func getChallengeStats() -> ChallengeStats {
+        let completed = getCompletedChallenges().count
+        let failed = getFailedChallenges().count
+        let total = challenges.count
         
-        // Calculate reading streak within challenge period
-        var currentStreak = 0
-        var currentDate = today
+        let successRate = total > 0 ? Double(completed) / Double(total) : 0
         
-        while currentDate >= challenge.startDate {
-            let dayPages = items.reduce(0) { total, item in
-                total + item.getPagesReadForDate(currentDate)
-            }
-            
-            if dayPages > 0 {
-                currentStreak += 1
-                currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
-            } else {
-                break
-            }
+        let totalPagesRead = getCompletedChallenges().reduce(0) { sum, challenge in
+            let progress = calculateProgress(for: challenge)
+            return sum + progress.pagesRead
         }
         
-        // Calculate best reading day
-        var bestDay: (date: Date, pages: Int) = (Date(), 0)
-        var currentCheckDate = challenge.startDate
-        
-        while currentCheckDate <= min(today, challenge.endDate) {
-            let dayPages = items.reduce(0) { total, item in
-                total + item.getPagesReadForDate(currentCheckDate)
-            }
-            
-            if dayPages > bestDay.pages {
-                bestDay = (currentCheckDate, dayPages)
-            }
-            
-            currentCheckDate = calendar.date(byAdding: .day, value: 1, to: currentCheckDate) ?? challenge.endDate
-        }
+        let averageDuration = challenges.isEmpty ? 0 : 
+            challenges.reduce(0) { $0 + $1.duration } / challenges.count
         
         return ChallengeStats(
-            currentStreak: currentStreak,
-            bestReadingDay: bestDay.date,
-            bestReadingDayPages: bestDay.pages,
-            averageDailyPages: progress.daysElapsed > 0 ? 
-                Double(progress.currentPages) / Double(progress.daysElapsed) : 0.0,
-            daysWithReading: getDaysWithReading(challenge, items: items)
+            totalChallenges: total,
+            completedChallenges: completed,
+            failedChallenges: failed,
+            successRate: successRate,
+            totalPagesRead: totalPagesRead,
+            averageDuration: averageDuration
         )
     }
     
-    /// Get number of days with reading activity
-    private func getDaysWithReading(_ challenge: Challenge, items: [Item]) -> Int {
-        var daysWithActivity: Set<Date> = []
-        
-        for item in items {
-            for entry in item.pageEntries {
-                if entry.date >= challenge.startDate && 
-                   entry.date <= challenge.endDate && 
-                   entry.pagesRead > 0 {
-                    daysWithActivity.insert(calendar.startOfDay(for: entry.date))
-                }
-            }
+    // MARK: - Private Methods
+    
+    private func loadChallenges() {
+        do {
+            let descriptor = FetchDescriptor<Challenge>(
+                sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+            )
+            challenges = try modelContext.fetch(descriptor)
+            activeChallenge = getActiveChallenge()
+        } catch {
+            print("Error loading challenges: \(error)")
+            challenges = []
         }
-        
-        return daysWithActivity.count
     }
     
-    // MARK: - Helper Methods
+    private func fetchAllItems() -> [Item] {
+        do {
+            let descriptor = FetchDescriptor<Item>()
+            return try modelContext.fetch(descriptor)
+        } catch {
+            print("Error fetching items: \(error)")
+            return []
+        }
+    }
     
-    private func saveContext() throws {
+    func saveContext() {
         do {
             try modelContext.save()
         } catch {
-            print("Error saving challenge context: \(error)")
-            throw error
+            print("Error saving context: \(error)")
         }
     }
 }
 
-// MARK: - Data Structures
+// MARK: - Supporting Types
 
 struct ChallengeProgress {
-    let currentPages: Int
+    let pagesRead: Int
     let targetPages: Int
-    let progressPercentage: Double
+    let progress: Double
     let daysElapsed: Int
     let daysRemaining: Int
-    let totalDays: Int
-    let dailyAverageNeeded: Double
-    let newMilestones: [Int]
+    let averagePagesPerDay: Double
+    let dailyPagesNeeded: Int
+    let currentStreak: Int
+    let readingDays: Int
     
-    var isCompleted: Bool {
-        progressPercentage >= 1.0
+    var progressPercentage: Int {
+        Int(progress * 100)
+    }
+    
+    var isOnTrack: Bool {
+        averagePagesPerDay >= Double(dailyPagesNeeded)
     }
     
     var pagesRemaining: Int {
-        max(0, targetPages - currentPages)
+        max(0, targetPages - pagesRead)
     }
 }
 
+struct DailyChartData: Identifiable {
+    let id = UUID()
+    let date: Date
+    let pagesRead: Int
+    let cumulativePages: Int
+}
+
 struct ChallengeStats {
-    let currentStreak: Int
-    let bestReadingDay: Date
-    let bestReadingDayPages: Int
-    let averageDailyPages: Double
-    let daysWithReading: Int
+    let totalChallenges: Int
+    let completedChallenges: Int
+    let failedChallenges: Int
+    let successRate: Double
+    let totalPagesRead: Int
+    let averageDuration: Int
 }
