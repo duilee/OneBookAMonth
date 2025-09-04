@@ -11,12 +11,13 @@ struct CreateChallengeView: View {
     @Binding var isPresented: Bool
     let viewModel: ChallengeViewModel
     
-    @State private var challengeName: String = "My Reading Challenge"
+    @State private var challengeName: String = ""
     @State private var startDate = Calendar.current.startOfDay(for: Date())
     @State private var endDate = Calendar.current.startOfDay(for: Calendar.current.date(byAdding: .day, value: 29, to: Date()) ?? Date())
     @State private var targetPages: String = "300"
     @State private var showError = false
     @State private var errorMessage = ""
+    @FocusState private var isInputFocused: Bool
     
     private let primaryColor = Color(red: 25/255, green: 45/255, blue: 155/255)
     
@@ -67,8 +68,9 @@ struct CreateChallengeView: View {
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.secondary)
                             
-                            TextField("e.g., Summer Reading Challenge", text: $challengeName)
+                            TextField("My Reading Challenge", text: $challengeName)
                                 .textFieldStyle(CustomTextFieldStyle())
+                                .focused($isInputFocused)
                         }
                         
                         // Duration Section
@@ -140,6 +142,7 @@ struct CreateChallengeView: View {
                             TextField("Enter target pages", text: $targetPages)
                                 .keyboardType(.numberPad)
                                 .textFieldStyle(CustomTextFieldStyle())
+                                .focused($isInputFocused)
                         }
                         
                         // Challenge Summary Card
@@ -171,7 +174,15 @@ struct CreateChallengeView: View {
                     
                     Spacer(minLength: 20)
                 }
+//                .padding(.bottom, 24)
+//                // Make the whole scroll content count as a tappable region
+//                .contentShape(Rectangle())
+//                // Dismiss keyboard when the user taps anywhere that isn't a control
+//                .onTapGesture {
+//                    isInputFocused = false
+//                }
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -186,6 +197,12 @@ struct CreateChallengeView: View {
                     }
                     .font(.system(size: 16, weight: .semibold))
                     .disabled(!isFormValid)
+                }
+                
+                // Handy "Done" above the keyboard for number pad & general UX
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { isInputFocused = false }
                 }
             }
             .alert("Error", isPresented: $showError) {

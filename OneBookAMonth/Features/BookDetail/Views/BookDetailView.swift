@@ -260,7 +260,7 @@ struct BookDetailView: View {
                                 .foregroundColor(Color.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 60)
-                                .background(Color.blue)
+                                .background(Color(red: 25/255, green: 45/255, blue: 155/255))
                                 .cornerRadius(16)
                                 .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
                             }
@@ -279,7 +279,7 @@ struct BookDetailView: View {
                                 .foregroundColor(Color.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 60)
-                                .background(Color.blue)
+                                .background(Color(red: 25/255, green: 45/255, blue: 155/255))
                                 .cornerRadius(16)
                                 .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
                             }

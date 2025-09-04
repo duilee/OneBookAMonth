@@ -13,6 +13,11 @@ struct ChallengeCard: View {
     let isCompact: Bool
     
     private let primaryColor = Color(red: 25/255, green: 45/255, blue: 155/255)
+    private let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter
+    }()
     
     init(challenge: Challenge, progress: ChallengeProgress, isCompact: Bool = false) {
         self.challenge = challenge
@@ -29,6 +34,11 @@ struct ChallengeCard: View {
                         .font(.system(size: isCompact ? 18 : 20, weight: .semibold))
                         .foregroundColor(.primary)
                     
+                    // Date range
+                    Text("\(dateFormatter.string(from: challenge.startDate)) - \(dateFormatter.string(from: challenge.endDate)), \(String(Calendar.current.component(.year, from: challenge.endDate)))")
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                    
                     HStack(spacing: 8) {
                         // Status Badge
                         StatusBadge(isOnTrack: progress.isOnTrack)
@@ -44,7 +54,7 @@ struct ChallengeCard: View {
                 
                 Spacer()
                 
-                if !isCompact {
+                if isCompact {
                     MiniProgressRing(progress: progress.progress, size: 50)
                 }
             }
@@ -62,47 +72,47 @@ struct ChallengeCard: View {
                     )
                     
                     StatItem(
-                        icon: "flame.fill",
-                        value: "\(progress.currentStreak)",
-                        label: "Day Streak",
-                        color: .orange
+                        icon: "chart.line.uptrend.xyaxis",
+                        value: "\(Int(progress.averagePagesPerDay))",
+                        label: "Avg. Daily",
+                        color: .blue
                     )
                     
                     StatItem(
-                        icon: "target",
-                        value: "\(progress.dailyPagesNeeded)",
-                        label: "Daily Goal",
+                        icon: "calendar",
+                        value: "\(progress.readingDays)",
+                        label: "Reading Days",
                         color: progress.isOnTrack ? .green : .red
                     )
                 }
                 
-                // Progress Bar
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Progress")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        Text("\(progress.progressPercentage)%")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(primaryColor)
-                    }
-                    
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.gray.opacity(0.2))
-                                .frame(height: 8)
-                            
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(primaryColor)
-                                .frame(width: geometry.size.width * progress.progress, height: 8)
-                        }
-                    }
-                    .frame(height: 8)
-                }
+//                // Progress Bar
+//                VStack(alignment: .leading, spacing: 8) {
+//                    HStack {
+//                        Text("Progress")
+//                            .font(.system(size: 12, weight: .medium))
+//                            .foregroundColor(.secondary)
+//                        
+//                        Spacer()
+//                        
+//                        Text("\(progress.progressPercentage)%")
+//                            .font(.system(size: 12, weight: .semibold))
+//                            .foregroundColor(primaryColor)
+//                    }
+//                    
+//                    GeometryReader { geometry in
+//                        ZStack(alignment: .leading) {
+//                            RoundedRectangle(cornerRadius: 4)
+//                                .fill(Color.gray.opacity(0.2))
+//                                .frame(height: 8)
+//                            
+//                            RoundedRectangle(cornerRadius: 4)
+//                                .fill(primaryColor)
+//                                .frame(width: geometry.size.width * progress.progress, height: 8)
+//                        }
+//                    }
+//                    .frame(height: 8)
+//                }
             }
         }
         .padding(isCompact ? 12 : 16)

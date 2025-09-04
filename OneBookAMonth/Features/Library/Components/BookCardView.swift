@@ -32,16 +32,6 @@ struct ProgressBar: View {
     }
 }
 
-// Helper view for background blur effect
-struct BackgroundBlurView: UIViewRepresentable {
-    func makeUIView(context: Context) -> UIView {
-        let view = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {}
-}
-
 struct BookCardView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
@@ -51,8 +41,9 @@ struct BookCardView: View {
     var onUpdateTap: (() -> Void)? = nil  // Optional callback for update action
     
     @State private var dayTag: String = ""
-    @State private var isPressed: Bool = false
     @State private var lastUpdateDate = Date()
+    
+    private let primaryColor = Color(red: 25/255, green: 45/255, blue: 155/255)
     
     // State for sheets - only keep update progress local if no callback provided
     @State private var showUpdateProgress = false
@@ -70,18 +61,20 @@ struct BookCardView: View {
                     BookCoverView(imageData: item.book_image)
                         .frame(width: 65, height: 90)
                         .cornerRadius(8)
+                        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
                     
                     // Day tag overlaid on book cover
                     Text(dayTag)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(.white)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
                         .background(
-                            Color(red: 25/255, green: 45/255, blue: 155/255).opacity(0.9)
+                            Capsule()
+                                .fill(primaryColor)
+                                .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
                         )
-                        .cornerRadius(4)
-                        .offset(y: 4)
+                        .offset(y: 6)
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
@@ -131,13 +124,16 @@ struct BookCardView: View {
                         // Visual progress bar
                         GeometryReader { geometry in
                             ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.gray.opacity(0.1))
+                                RoundedRectangle(cornerRadius: 3)
+                                    .fill(Color.gray.opacity(0.15))
 
-                                RoundedRectangle(cornerRadius: 4)
+                                RoundedRectangle(cornerRadius: 3)
                                     .fill(
                                         LinearGradient(
-                                            colors: [.blue, .blue.opacity(0.7)],
+                                            gradient: Gradient(colors: [
+                                                primaryColor,
+                                                primaryColor.opacity(0.8)
+                                            ]),
                                             startPoint: .leading,
                                             endPoint: .trailing
                                         )
@@ -145,7 +141,7 @@ struct BookCardView: View {
                                     .frame(width: geometry.size.width * CGFloat(item.progress))
                             }
                         }
-                        .frame(height: 8)
+                        .frame(height: 6)
 
                         HStack {
                             Text("\(Int(item.progress * 100))% Complete")
@@ -154,9 +150,9 @@ struct BookCardView: View {
                             Spacer()
                             
                             Text("Hold for actions")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(.blue)
-                                .opacity(0.7)
+                                .font(.system(size: 11))
+                                .foregroundColor(.secondary)
+                                //.opacity(0.5)
                         }
                     }
                     .padding(.top, 8)
@@ -165,15 +161,12 @@ struct BookCardView: View {
 
                 
             }
-            .padding(12)
-
- 
+            .padding(16)
         }
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
         )
         .onAppear {
             updateDayTag()

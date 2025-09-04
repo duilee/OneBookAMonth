@@ -53,11 +53,11 @@ struct NotificationSettingsCard: View {
                             }
                     }
                     
-                    // Preview message
-                    NotificationPreviewCard(
-                        time: viewModel.notificationTime,
-                        message: viewModel.getNotificationPreviewMessage()
-                    )
+//                    // Preview message
+//                    NotificationPreviewCard(
+//                        time: viewModel.notificationTime,
+//                        message: viewModel.getNotificationPreviewMessage()
+//                    )
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
                 .animation(.easeInOut(duration: 0.3), value: viewModel.notificationsEnabled)

@@ -18,6 +18,12 @@ class ChallengeViewModel {
     var showCreateChallenge: Bool = false
     var errorMessage: String?
     
+    // Past challenges
+    var pastChallenges: [(challenge: Challenge, progress: ChallengeProgress)] = []
+    var completedChallengesCount: Int = 0
+    var totalBooksRead: Int = 0
+    var bestStreak: Int = 0
+    
     // Notification settings
     var notificationsEnabled: Bool = false
     var notificationTime: Date = Calendar.current.date(bySettingHour: 19, minute: 0, second: 0, of: Date()) ?? Date()
@@ -52,6 +58,37 @@ class ChallengeViewModel {
             challengeProgress = nil
             todayPages = 0
             notificationsEnabled = false
+        }
+        
+        // Load past challenges
+        loadPastChallenges()
+    }
+    
+    private func loadPastChallenges() {
+        guard let manager = challengeManager else { return }
+        
+        // Get all non-active challenges, sorted by date
+        let allChallenges = manager.challenges.filter { $0.id != activeChallenge?.id }
+            .sorted { $0.startDate > $1.startDate }
+        
+        // Calculate progress for each past challenge
+        pastChallenges = allChallenges.map { challenge in
+            let progress = manager.calculateProgress(for: challenge)
+            return (challenge: challenge, progress: progress)
+        }
+        
+        // Calculate stats
+        completedChallengesCount = manager.getCompletedChallenges().count
+        
+        // Calculate total books read (simplified - based on pages)
+        totalBooksRead = pastChallenges.reduce(0) { total, item in
+            // Estimate books based on 250 pages per book
+            total + (item.progress.pagesRead / 250)
+        }
+        
+        // Find best streak across all challenges
+        bestStreak = pastChallenges.reduce(0) { maxStreak, item in
+            max(maxStreak, item.progress.currentStreak)
         }
     }
     
@@ -186,5 +223,23 @@ class ChallengeViewModel {
         } else {
             return "Great job! You've read \(todayPages) pages today"
         }
+    }
+    
+    // MARK: - Challenge Management
+    
+    func deleteChallenge(_ challenge: Challenge) {
+        guard let manager = challengeManager else { return }
+        
+        // Don't allow deletion of active challenges
+        guard challenge.status != .active else {
+            errorMessage = "Cannot delete an active challenge"
+            return
+        }
+        
+        // Delete the challenge
+        manager.deleteChallenge(challenge)
+        
+        // Refresh data to update the UI
+        refreshData()
     }
 }

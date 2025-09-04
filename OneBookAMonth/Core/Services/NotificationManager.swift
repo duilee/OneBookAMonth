@@ -106,13 +106,13 @@ class NotificationManager: ObservableObject {
         // Dynamic body based on daily needs
         let pagesNeeded = progress.dailyPagesNeeded - todayPages
         if pagesNeeded > 0 {
-            content.body = "You need \(pagesNeeded) pages today to stay on track. Current streak: \(progress.currentStreak) days 🔥"
+            content.body = progress.currentStreak > 0 ? "You need \(pagesNeeded) pages today to stay on track. Current streak: \(progress.currentStreak) days 🔥" : "You need \(pagesNeeded) pages today to stay on track. Keep going! 💪"
         } else {
             content.body = "Great job today! You've read \(todayPages) pages. Keep your \(progress.currentStreak)-day streak alive! 🔥"
         }
         
         content.sound = .default
-        content.badge = NSNumber(value: pagesNeeded > 0 ? pagesNeeded : 0)
+        //content.badge = NSNumber(value: 0)
         
         // Add category for action buttons (future enhancement)
         content.categoryIdentifier = "READING_REMINDER"

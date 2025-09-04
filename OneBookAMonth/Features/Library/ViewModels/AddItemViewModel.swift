@@ -19,13 +19,15 @@ struct AddItemViewModel: View {
     @State private var showError = false
     @State private var showImagePicker = false
     @State private var selectedImage: UIImage?
+    @FocusState private var isInputFocused: Bool
     
     private var itemManager: ItemManager {
         ItemManager(modelContext: modelContext)
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        NavigationView {
+            VStack(spacing: 0) {
             // Header
             HStack {
                 Text("Add New Book")
@@ -116,6 +118,7 @@ struct AddItemViewModel: View {
                     
                     TextField("Enter book name", text: $itemName)
                         .textFieldStyle(.roundedBorder)
+                        .focused($isInputFocused)
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
@@ -126,6 +129,7 @@ struct AddItemViewModel: View {
                     TextField("Enter total pages", text: $totalCount)
                         .textFieldStyle(.roundedBorder)
                         .keyboardType(.numberPad)
+                        .focused($isInputFocused)
                         .onChange(of: totalCount) { oldValue, newValue in
                             let filtered = newValue.filter { $0.isNumber }
                             if filtered != newValue {
@@ -154,6 +158,15 @@ struct AddItemViewModel: View {
             .disabled(itemName.isEmpty || totalCount.isEmpty)
             .padding(.horizontal, 16)
             .padding(.bottom, 20)
+            }
+            .toolbar {
+                // Keyboard Done button
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { isInputFocused = false }
+                }
+            }
+            .navigationBarHidden(true)
         }
         .frame(width: 320, height: 460)
         .background(Color(uiColor: .systemBackground))

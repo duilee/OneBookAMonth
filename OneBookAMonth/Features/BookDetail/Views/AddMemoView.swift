@@ -92,6 +92,12 @@ struct AddMemoView: View {
                     .disabled(!canSave || isSaving)
                     .fontWeight(.semibold)
                 }
+                
+                // Keyboard Done button for TextEditor
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { isTextEditorFocused = false }
+                }
             }
         }
         .alert("Discard Changes?", isPresented: $showDiscardAlert) {

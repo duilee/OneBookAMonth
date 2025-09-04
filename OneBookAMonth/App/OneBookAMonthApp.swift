@@ -12,6 +12,7 @@ import SwiftData
 struct OneBookAMonthApp: App {
     @Environment(\.modelContext) private var modelContext
     @State private var isLoading = true
+    @State private var showOnboarding = false
     
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -34,6 +35,9 @@ struct OneBookAMonthApp: App {
             if isLoading {
                 LoadingView()
                     .onAppear {
+                        // Check onboarding status during loading
+                        showOnboarding = OnboardingManager.shared.shouldShowOnboarding()
+                        
                         // Simulate loading time or actual initialization
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                             withAnimation {
@@ -41,6 +45,9 @@ struct OneBookAMonthApp: App {
                             }
                         }
                     }
+            } else if showOnboarding {
+                OnboardingContainerView()
+                    .transition(.opacity)
             } else {
                 ContentView()
                     .transition(.opacity)

@@ -18,6 +18,7 @@ struct EditItemViewModel: View {
     @State private var totalCount: String
     @State private var showError = false
     @State private var showDeleteConfirmation = false
+    @FocusState private var isInputFocused: Bool
     
     private var itemManager: ItemManager {
         ItemManager(modelContext: modelContext)
@@ -31,7 +32,8 @@ struct EditItemViewModel: View {
     }
     
     var body: some View {
-        VStack(spacing: 0) {
+        NavigationView {
+            VStack(spacing: 0) {
             // Header
             HStack {
                 Text("Edit Book")
@@ -61,6 +63,7 @@ struct EditItemViewModel: View {
                     
                     TextField("Enter book name", text: $itemName)
                         .textFieldStyle(.roundedBorder)
+                        .focused($isInputFocused)
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
@@ -71,6 +74,7 @@ struct EditItemViewModel: View {
                     TextField("Enter total pages", text: $totalCount)
                         .textFieldStyle(.roundedBorder)
                         .keyboardType(.numberPad)
+                        .focused($isInputFocused)
                         .onChange(of: totalCount) { oldValue, newValue in
                             let filtered = newValue.filter { $0.isNumber }
                             if filtered != newValue {
@@ -120,6 +124,15 @@ struct EditItemViewModel: View {
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 20)
+            }
+            .toolbar {
+                // Keyboard Done button
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { isInputFocused = false }
+                }
+            }
+            .navigationBarHidden(true)
         }
         .background(Color(uiColor: .systemBackground))
         .alert("Invalid Input", isPresented: $showError) {
