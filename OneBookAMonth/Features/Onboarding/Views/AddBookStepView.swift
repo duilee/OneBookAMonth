@@ -128,6 +128,14 @@ struct AddBookStepView: View {
                 hasAddedBook = true
             }
         }
+        .toolbar {
+            
+            // Handy "Done" above the keyboard for number pad & general UX
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") { focusedField = nil }
+            }
+        }
     }
     
     private var isValidInput: Bool {

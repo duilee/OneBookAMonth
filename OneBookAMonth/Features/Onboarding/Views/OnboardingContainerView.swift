@@ -36,7 +36,7 @@ struct OnboardingContainerView: View {
                         }
                         .foregroundStyle(.secondary)
                         .padding()
-                        .padding(.top, 50) // Account for safe area
+                        .padding(.top, 10) // Account for safe area
                     }
                 }
             }
