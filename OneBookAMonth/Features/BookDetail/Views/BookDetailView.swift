@@ -289,6 +289,12 @@ struct BookDetailView: View {
                     }
                     .padding(.horizontal, spacing.md)
                     .padding(.top, spacing.sm)
+                    
+                    // MARK: - Focus Timer Card
+                    FocusTimerCard(item: item!)
+                        .padding(.horizontal, spacing.md)
+                        .padding(.top, spacing.sm)
+                    
                     .sheet(isPresented: $isUpdatingProgress) {
                         NavigationView {
                             VStack {

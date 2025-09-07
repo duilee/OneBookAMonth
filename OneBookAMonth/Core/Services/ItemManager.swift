@@ -321,6 +321,95 @@ extension ItemManager {
         return (daysLeft, pagesPerDay)
     }
     
+    // MARK: - Focus Timer Methods
+    
+    // Get focus time for a date range
+    func getFocusTimeStats(for item: Item, from startDate: Date, to endDate: Date) -> (total: TimeInterval, daily: [Date: TimeInterval]) {
+        let focusTimes = item.dailyFocusTimes.filter { entry in
+            entry.date >= startDate && entry.date <= endDate
+        }
+        
+        let total = focusTimes.reduce(0) { $0 + $1.focusedSeconds }
+        
+        var dailyMap: [Date: TimeInterval] = [:]
+        for entry in focusTimes {
+            dailyMap[calendar.startOfDay(for: entry.date)] = entry.focusedSeconds
+        }
+        
+        return (total: total, daily: dailyMap)
+    }
+    
+    // Get weekly focus time
+    func getWeeklyFocusTime(for item: Item, week: Date = Date()) -> TimeInterval {
+        guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: week) else { return 0 }
+        let stats = getFocusTimeStats(for: item, from: weekInterval.start, to: weekInterval.end)
+        return stats.total
+    }
+    
+    // Get monthly focus time
+    func getMonthlyFocusTime(for item: Item, month: Date = Date()) -> TimeInterval {
+        guard let monthInterval = calendar.dateInterval(of: .month, for: month) else { return 0 }
+        let stats = getFocusTimeStats(for: item, from: monthInterval.start, to: monthInterval.end)
+        return stats.total
+    }
+    
+    // Get average daily focus time
+    func getAverageDailyFocusTime(for item: Item) -> TimeInterval {
+        guard !item.dailyFocusTimes.isEmpty else { return 0 }
+        
+        let totalTime = item.totalFocusedReadingTime ?? 0
+        let daysWithFocus = item.dailyFocusTimes.count
+        
+        return daysWithFocus > 0 ? totalTime / Double(daysWithFocus) : 0
+    }
+    
+    // Get focus streak (consecutive days with focus time)
+    func getFocusStreak(for item: Item) -> Int {
+        var currentDate = calendar.startOfDay(for: Date())
+        var streak = 0
+        
+        while true {
+            if item.getFocusTime(for: currentDate) > 0 {
+                streak += 1
+                guard let previousDay = calendar.date(byAdding: .day, value: -1, to: currentDate) else { break }
+                currentDate = previousDay
+            } else {
+                break
+            }
+        }
+        
+        return streak
+    }
+    
+    // Get items with focus time on a specific date
+    func getItemsWithFocus(on date: Date) throws -> [Item] {
+        let startOfDay = calendar.startOfDay(for: date)
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) ?? date
+        
+        let descriptor = FetchDescriptor<Item>(
+            predicate: #Predicate<Item> { item in
+                item.dailyFocusTimes.contains { focusEntry in
+                    focusEntry.date >= startOfDay && 
+                    focusEntry.date < endOfDay &&
+                    focusEntry.focusedSeconds > 0
+                }
+            }
+        )
+        
+        return try modelContext.fetch(descriptor)
+    }
+    
+    // Clean up old focus entries (keep last 90 days)
+    func cleanupOldFocusEntries(for item: Item, keepDays: Int = 90) {
+        guard let cutoffDate = calendar.date(byAdding: .day, value: -keepDays, to: Date()) else { return }
+        
+        item.dailyFocusTimes.removeAll { entry in
+            entry.date < cutoffDate
+        }
+        
+        saveContext()
+    }
+    
     // Get this week's reading data for heatmap
     func getThisWeekData(for items: [Item], selectedDate: Date = Date()) -> [WeekDayData] {
         // Get start of current week (Monday)
