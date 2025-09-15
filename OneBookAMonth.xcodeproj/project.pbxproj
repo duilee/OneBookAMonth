@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		765A4FDD2D60D12100F94BDF /* HorizonCalendar in Frameworks */ = {isa = PBXBuildFile; productRef = 765A4FDC2D60D12100F94BDF /* HorizonCalendar */; };
+		76EDF6202E7670C200441529 /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 76EDF61F2E7670C200441529 /* GoogleMobileAds */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -69,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				76EDF6202E7670C200441529 /* GoogleMobileAds in Frameworks */,
 				765A4FDD2D60D12100F94BDF /* HorizonCalendar in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -131,6 +133,7 @@
 			name = OneBookAMonth;
 			packageProductDependencies = (
 				765A4FDC2D60D12100F94BDF /* HorizonCalendar */,
+				76EDF61F2E7670C200441529 /* GoogleMobileAds */,
 			);
 			productName = OneBookAMonth;
 			productReference = 765A4FA92D60D0D100F94BDF /* OneBookAMonth.app */;
@@ -216,6 +219,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				765A4FDB2D60D12100F94BDF /* XCRemoteSwiftPackageReference "HorizonCalendar" */,
+				76EDF61E2E7670C200441529 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 765A4FAA2D60D0D100F94BDF /* Products */;
@@ -315,7 +319,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 25.3.0;
+				MARKETING_VERSION = 25.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.duilee.OneBookAMonth;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -352,7 +356,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 25.3.0;
+				MARKETING_VERSION = 25.4.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.duilee.OneBookAMonth;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -606,6 +610,14 @@
 				kind = branch;
 			};
 		};
+		76EDF61E2E7670C200441529 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.11.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -613,6 +625,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 765A4FDB2D60D12100F94BDF /* XCRemoteSwiftPackageReference "HorizonCalendar" */;
 			productName = HorizonCalendar;
+		};
+		76EDF61F2E7670C200441529 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 76EDF61E2E7670C200441529 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

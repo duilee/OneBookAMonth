@@ -31,8 +31,13 @@ struct BookDetailView: View {
     @State private var memoToDelete: Memo?
     @State private var showDeleteMemoConfirmation = false
     
-    // Store ItemManager as State to prevent recreating on every access
+    // Celebration modal state
+    @State private var showCelebration = false
+    @State private var celebrationContext: CelebrationContext?
+    
+    // Store managers as State to prevent recreating on every access
     @State private var itemManager: ItemManager?
+    @State private var challengeManager: ChallengeManager?
     
     private let calendar = Calendar.current
     let item: Item?
@@ -290,41 +295,27 @@ struct BookDetailView: View {
                     .padding(.horizontal, spacing.md)
                     .padding(.top, spacing.sm)
                     
+                    // MARK: - AdMob Banner
+                    AdMobBannerView()
+                        .padding(.horizontal, spacing.md)
+                        .padding(.top, spacing.xs)
+                    
                     // MARK: - Focus Timer Card
                     FocusTimerCard(item: item!)
                         .padding(.horizontal, spacing.md)
                         .padding(.top, spacing.sm)
                     
-                    .sheet(isPresented: $isUpdatingProgress) {
-                        NavigationView {
-                            VStack {
-                                Picker("Select Page", selection: $selectedPage) {
-                                    ForEach(0...item!.numberOfPages, id: \.self) { page in
-                                        Text("\(page)")
-                                    }
-                                }
-                                .pickerStyle(.wheel)
-                            }
-                            .navigationTitle("Update Progress")
-                            .navigationBarTitleDisplayMode(.inline)
-                            .toolbar {
-                                ToolbarItemGroup(placement: .cancellationAction) {
-                                    Button("Cancel") {
-                                        isUpdatingProgress = false
-                                    }
-                                }
-                                
-                                ToolbarItemGroup(placement: .confirmationAction) {
-                                    Button("Save") {
-                                        itemManager?.updateProgress(item!, pages: selectedPage)
-                                        calendarRefreshTrigger = UUID()
-                                        isUpdatingProgress = false
-                                    }
-                                }
-                            }
-                        }
-                        .presentationDetents([.height(250)])
-                    }
+//                    // MARK: - Challenge Progress Card (if active challenge)
+//                    if let challengeManager = challengeManager,
+//                       let activeChallenge = challengeManager.getActiveChallengeForItem(item!) {
+//                        ChallengeProgressCard(
+//                            item: item!,
+//                            challenge: activeChallenge,
+//                            itemManager: itemManager!
+//                        )
+//                        .padding(.horizontal, spacing.md)
+//                        .padding(.top, spacing.sm)
+//                    }
                     
                     // MARK: - Calendar Section
                     VStack(spacing: 0) {
@@ -525,10 +516,75 @@ struct BookDetailView: View {
             
         }
         .onAppear {
-            // Initialize ItemManager once to prevent memory leak
+            // Initialize managers once to prevent memory leak
             if itemManager == nil {
                 itemManager = ItemManager(modelContext: modelContext)
             }
+            if challengeManager == nil {
+                challengeManager = ChallengeManager(modelContext: modelContext)
+            }
+        }
+        .sheet(isPresented: $isUpdatingProgress) {
+            NavigationView {
+                VStack {
+                    Picker("Select Page", selection: $selectedPage) {
+                        ForEach(0...item!.numberOfPages, id: \.self) { page in
+                            Text("\(page)")
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                }
+                .navigationTitle("Update Progress")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItemGroup(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            isUpdatingProgress = false
+                        }
+                    }
+                    
+                    ToolbarItemGroup(placement: .confirmationAction) {
+                        Button("Save") {
+                            // Store old pages before update
+                            let oldPages = item!.currentPage
+                            
+                            // Generate celebration context BEFORE updating
+                            if let challengeManager = challengeManager,
+                               let itemManager = itemManager {
+                                
+                                // Update progress
+                                itemManager.updateProgress(item!, pages: selectedPage)
+                                
+                                let context = CelebrationService.generateCelebration(
+                                    item: item!,
+                                    oldPages: oldPages,
+                                    newPages: selectedPage,
+                                    challenges: challengeManager.getAllChallenges(),
+                                    itemManager: itemManager
+                                )
+                                
+                                calendarRefreshTrigger = UUID()
+                                isUpdatingProgress = false
+                                
+                                // Show celebration if significant progress
+                                if context.shouldShow {
+                                    celebrationContext = context
+                                    // Delay showing celebration slightly to let sheet dismiss
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        showCelebration = true
+                                    }
+                                }
+                            } else {
+                                // Fallback if managers not initialized
+                                itemManager?.updateProgress(item!, pages: selectedPage)
+                                calendarRefreshTrigger = UUID()
+                                isUpdatingProgress = false
+                            }
+                        }
+                    }
+                }
+            }
+            .presentationDetents([.height(250)])
         }
         .sheet(isPresented: $isEditingItem) {
             EditItemViewModel(item: item!, isPresented: $isEditingItem)
@@ -663,6 +719,15 @@ struct BookDetailView: View {
             }
         } message: {
             Text("This action cannot be undone.")
+        }
+        // MARK: - Celebration Modal Overlay
+        .overlay {
+            if showCelebration, let context = celebrationContext {
+                ProgressCelebrationModal(
+                    context: context,
+                    isPresented: $showCelebration
+                )
+            }
         }
 
     }

@@ -702,8 +702,26 @@ extension ItemManager {
     /// Calculate reading streak within challenge period
     func getReadingStreakInRange(for items: [Item], startDate: Date, endDate: Date, from currentDate: Date = Date()) -> Int {
         var streak = 0
+        let today = calendar.startOfDay(for: Date())
         var checkDate = min(currentDate, endDate)
         
+        // Check if we're starting from today
+        if calendar.isDate(checkDate, inSameDayAs: today) {
+            let todayPages = items.reduce(0) { total, item in
+                total + item.getPagesReadForDate(today)
+            }
+            
+            if todayPages > 0 {
+                // Today has reading, include it in the streak
+                streak = 1
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate) ?? startDate
+            } else {
+                // Today has no reading, start checking from yesterday to show existing streak
+                checkDate = calendar.date(byAdding: .day, value: -1, to: checkDate) ?? startDate
+            }
+        }
+        
+        // Continue checking backwards from the adjusted date
         while checkDate >= startDate {
             let dayPages = items.reduce(0) { total, item in
                 total + item.getPagesReadForDate(checkDate)
