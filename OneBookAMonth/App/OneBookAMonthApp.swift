@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import GoogleMobileAds
 
 @main
 struct OneBookAMonthApp: App {
@@ -35,6 +36,9 @@ struct OneBookAMonthApp: App {
             if isLoading {
                 LoadingView()
                     .onAppear {
+                        // Initialize GoogleMobileAds
+                        MobileAds.shared.start(completionHandler: nil)
+                        
                         // Check onboarding status during loading
                         showOnboarding = OnboardingManager.shared.shouldShowOnboarding()
                         

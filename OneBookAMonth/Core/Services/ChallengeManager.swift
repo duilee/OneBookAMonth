@@ -252,6 +252,105 @@ class ChallengeManager: ObservableObject {
     }
 }
 
+// MARK: - Challenge Progress Extensions
+extension ChallengeManager {
+    
+    // Get active challenge for specific item (if any)
+    func getActiveChallengeForItem(_ item: Item) -> Challenge? {
+        // For now, return any active challenge since challenges apply to all reading
+        // In the future, could be enhanced to support item-specific challenges
+        return getActiveChallenge()
+    }
+    
+    // Check if user is on track with a challenge
+    func isOnTrack(_ challenge: Challenge, item: Item) -> Bool {
+        let daysWithReading = getDaysWithReading(challenge: challenge, item: item)
+        let expectedDays = Int(Double(challenge.daysElapsed) * 0.7) // Aim for 70% of days
+        return daysWithReading >= expectedDays
+    }
+    
+    // Get number of days with reading activity during challenge
+    func getDaysWithReading(challenge: Challenge, item: Item) -> Int {
+        let calendar = Calendar.current
+        var count = 0
+        var currentDate = challenge.startDate
+        let endDate = min(Date(), challenge.endDate)
+        
+        while currentDate <= endDate {
+            if item.getPagesReadForDate(currentDate) > 0 {
+                count += 1
+            }
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
+        }
+        
+        return count
+    }
+    
+    // Get this week's progress for a specific item and challenge
+    func getThisWeekProgress(_ challenge: Challenge, item: Item) -> [Bool] {
+        let calendar = Calendar.current
+        let today = Date()
+        
+        // Get start of current week (Sunday)
+        guard let weekStart = calendar.dateInterval(of: .weekOfYear, for: today)?.start else {
+            return Array(repeating: false, count: 7)
+        }
+        
+        var progress: [Bool] = []
+        
+        for i in 0..<7 {
+            guard let day = calendar.date(byAdding: .day, value: i, to: weekStart) else {
+                progress.append(false)
+                continue
+            }
+            
+            // Only check days within challenge period and up to today
+            if day >= challenge.startDate && day <= min(today, challenge.endDate) {
+                let hasProgress = item.getPagesReadForDate(day) > 0
+                progress.append(hasProgress)
+            } else {
+                progress.append(false)
+            }
+        }
+        
+        return progress
+    }
+    
+    // Get days since last reading for an item
+    func daysSinceLastRead(_ item: Item) -> Int {
+        let calendar = Calendar.current
+        let sortedEntries = item.pageEntries.sorted { $0.date > $1.date }
+        
+        guard let lastReadDate = sortedEntries.first(where: { $0.pagesRead > 0 })?.date else {
+            return 999 // No reading found
+        }
+        
+        return calendar.dateComponents([.day], from: lastReadDate, to: Date()).day ?? 0
+    }
+    
+    // Get challenge status for display
+    func getProgressStatus(_ challenge: Challenge, item: Item) -> ProgressStatus {
+        let daysWithReading = getDaysWithReading(challenge: challenge, item: item)
+        let expectedDays = Int(Double(challenge.daysElapsed) * 0.7)
+        
+        if challenge.status == .completed {
+            return .completed
+        } else if challenge.daysRemaining <= 0 {
+            return challenge.status == .active ? .completed : .completed
+        } else if daysWithReading >= expectedDays {
+            return .onTrack
+        } else {
+            let daysBehind = expectedDays - daysWithReading
+            return daysBehind >= 3 ? .atRisk : .behind
+        }
+    }
+    
+    // Get all challenges (for celebration service)
+    func getAllChallenges() -> [Challenge] {
+        return challenges
+    }
+}
+
 // MARK: - Supporting Types
 
 struct ChallengeProgress {

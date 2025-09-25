@@ -19,11 +19,63 @@ final class Item {
     var currentPage: Int
     var book_image: Data?
     
+    // Focus timer properties
+    var totalFocusedReadingTime: TimeInterval?
+    var currentFocusSessionStart: Date?
+    
     @Relationship(deleteRule: .cascade) var pageEntries: [PageEntry]
     @Relationship(deleteRule: .cascade) var memos: [Memo]
+    @Relationship(deleteRule: .cascade) var dailyFocusTimes: [DailyFocusTime]
     
     var progress: Float {
         Float(currentPage) / Float(numberOfPages)
+    }
+    
+    // Helper computed property for today's focus time
+    var todaysFocusTime: TimeInterval {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        if let todayEntry = dailyFocusTimes.first(where: { 
+            calendar.isDate($0.date, inSameDayAs: today)
+        }) {
+            return todayEntry.focusedSeconds
+        }
+        return 0
+    }
+    
+    // Get focus time for a specific date
+    func getFocusTime(for date: Date) -> TimeInterval {
+        let calendar = Calendar.current
+        if let entry = dailyFocusTimes.first(where: { 
+            calendar.isDate($0.date, inSameDayAs: date)
+        }) {
+            return entry.focusedSeconds
+        }
+        return 0
+    }
+    
+    // Add focus time for today
+    func addFocusTime(_ seconds: TimeInterval) {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        if let todayEntry = dailyFocusTimes.first(where: { 
+            calendar.isDate($0.date, inSameDayAs: today)
+        }) {
+            // Update existing entry
+            todayEntry.focusedSeconds += seconds
+        } else {
+            // Create new entry for today
+            let newEntry = DailyFocusTime(date: today, focusedSeconds: seconds)
+            dailyFocusTimes.append(newEntry)
+        }
+        
+        // Update total (initialize to 0 if nil)
+        if totalFocusedReadingTime == nil {
+            totalFocusedReadingTime = 0
+        }
+        totalFocusedReadingTime! += seconds
     }
     
     init(timestamp: Date, name: String, numberOfPages: Int) {
@@ -35,10 +87,15 @@ final class Item {
         self.currentPage = 0
         self.book_image = nil
         
+        // Initialize focus timer properties
+        self.totalFocusedReadingTime = nil  // nil for backward compatibility
+        self.currentFocusSessionStart = nil
+        
         // Initialize with first entry
         let initialEntry = PageEntry(date: timestamp, pages: 0, pagesRead: 0)
         self.pageEntries = [initialEntry]
         self.memos = []
+        self.dailyFocusTimes = []
     }
     
     // Helper method to add pages for today
@@ -129,5 +186,19 @@ final class Memo {
         }
         self.imageFilename = nil
         self.thumbnailData = nil
+    }
+}
+
+// MARK: - DailyFocusTime Model
+@Model
+final class DailyFocusTime {
+    var id: UUID
+    var date: Date
+    var focusedSeconds: TimeInterval
+    
+    init(date: Date, focusedSeconds: TimeInterval) {
+        self.id = UUID()
+        self.date = date
+        self.focusedSeconds = focusedSeconds
     }
 }
