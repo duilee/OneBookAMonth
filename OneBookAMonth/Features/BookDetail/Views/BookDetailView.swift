@@ -567,7 +567,7 @@ struct BookDetailView: View {
                                 isUpdatingProgress = false
                                 
                                 // Show celebration if significant progress
-                                if context.shouldShow {
+                                if context.shouldShow && oldPages < selectedPage {
                                     celebrationContext = context
                                     // Delay showing celebration slightly to let sheet dismiss
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
