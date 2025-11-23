@@ -27,9 +27,6 @@ enum CompletedStatus: String, CaseIterable {
     case completed = "Completed"
 }
 
-// Color Palette
-struct ColorPalette {
-    let light = Color(red: 150/255, green: 160/255, blue: 220/255)
-    let medium = Color(red: 100/255, green: 110/255, blue: 190/255)
-    let deep = Color(red: 25/255, green: 45/255, blue: 155/255)
-}
+// MARK: - Design System
+// Colors, Typography, Spacing, Icons, and View Modifiers are now in the Design/ folder
+// Import from: AppColors, AppTypography, Spacing, AppIcons, ButtonStyles, ViewModifiers

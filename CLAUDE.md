@@ -30,6 +30,13 @@ OneBookAMonth/
 │   ├── Models/            # Data models (Item, Challenge, Memo)
 │   ├── Services/          # Business logic managers
 │   └── Extensions/        # Swift extensions
+├── Design/                 # ⭐ Design System (NEW)
+│   ├── AppColors.swift    # Complete color palette with semantic naming
+│   ├── AppTypography.swift # Semantic font scale with Dynamic Type
+│   ├── Spacing.swift      # 8pt grid system + shadows
+│   ├── AppIcons.swift     # Centralized SF Symbol definitions
+│   ├── ButtonStyles.swift # Reusable button component styles
+│   └── ViewModifiers.swift # Card styles and view extensions
 ├── Features/              # Feature modules
 │   ├── BookDetail/        # Book detail and memo management
 │   ├── Challenge/         # Reading challenges feature
@@ -102,6 +109,160 @@ Each major view has a corresponding ViewModel:
 - **SwiftData**: Apple's persistence framework (requires iOS 17+)
 - **AVFoundation**: Camera integration for book photos
 - **UserNotifications**: Local notification support
+
+## Design System
+
+OneBookAMonth uses a comprehensive design system inspired by ReadNow's professional architecture pattern. The design system provides consistency, maintainability, and a single source of truth for all design decisions.
+
+### Design System Files (`Design/` folder)
+
+#### AppColors.swift - Color Palette
+**Primary Colors**:
+- `primaryDeep` - Main brand color (25/255, 45/255, 155/255)
+- `primaryMedium` - Secondary variant
+- `primaryLight` - Accent variant
+
+**Semantic Colors**:
+- `successGreen`, `errorRed`, `warningOrange` - Status colors
+- `accentBlue`, `accentCoral` - Highlights and loading states
+
+**Status Colors** (for challenges):
+- `statusPending`, `statusActive`, `statusCompleted`, `statusFailed`
+
+**Neutral Palette**:
+- `textPrimary`, `textSecondary`, `textTertiary` - Text hierarchy
+- `backgroundPrimary`, `backgroundSecondary`, `surfaceColor` - Backgrounds
+- `borderColor`, `dividerColor` - Separators
+
+**Usage**: All colors support hex initializer: `Color(hex: "FF6B6B")`
+
+#### AppTypography.swift - Type Scale
+**Display Fonts**: `displayLarge`, `displayMedium`, `displaySmall`
+**Heading Fonts**: `headingLarge`, `headingMedium`, `headingSmall`
+**Body Fonts**: `bodyLarge`, `bodyMedium`, `bodySmall`
+**Label Fonts**: `labelLarge`, `labelMedium`, `labelSmall`, `labelTiny`
+
+**Special Purpose**:
+- `buttonLabel`, `tabLabel`, `badgeLabel`
+- `bookTitle`, `bookAuthor`, `bookPages`, `bookProgress`
+- `challengeTitle`, `challengeStatus`, `challengeStats`
+
+**All fonts support Dynamic Type** for accessibility.
+
+#### Spacing.swift - Layout System
+**8pt Grid**: `xxs (4)`, `xs (8)`, `sm (12)`, `md (16)`, `lg (20)`, `xl (24)`, `xxl (32)`, `xxxl (40)`, `massive (48)`
+
+**Insets**: `screenEdge`, `screenHorizontal`, `cardPadding`, `buttonPadding`, `listItem`, `badge`
+
+**Corner Radius**: `tiny (4)`, `small (8)`, `medium (12)`, `large (16)`, `xlarge (20)`, `xxlarge (24)`, `circle (28)`
+
+**Shadow Presets**: `Shadow.small`, `Shadow.medium`, `Shadow.large`, `Shadow.fab`
+
+#### AppIcons.swift - SF Symbols
+Centralized icon definitions organized by category:
+- Navigation: `add`, `close`, `back`, `forward`, `expand`
+- Books: `book`, `bookFilled`, `bookCircle`, `bookPages`
+- Camera & Photos: `camera`, `photo`, `photos`
+- Status: `checkmark`, `checkmarkFilled`, `target`, `trophy`, `sparkles`
+- Progress & Time: `timer`, `calendar`, `speedometer`, `clock`
+
+**Usage**: `Image(systemName: AppIcon.camera)` instead of hardcoded strings
+
+#### ButtonStyles.swift - Button Components
+- `PrimaryButtonStyle` - Blue filled buttons
+- `SecondaryButtonStyle` - Outlined buttons
+- `AccentButtonStyle` - Highlighted actions
+- `CompactButtonStyle` - Small CTAs
+- `DestructiveButtonStyle` - Delete/remove actions
+- `TextButtonStyle` - Text-only buttons
+
+**Usage**: `.buttonStyle(PrimaryButtonStyle())`
+
+#### ViewModifiers.swift - Reusable Modifiers
+- `.cardStyle()` - Standard card appearance with shadow
+- `.sectionStyle()` - Section backgrounds
+- `.badgeStyle(color:)` - Status badges
+- `.progressCardStyle()` - Book card styling
+- `.statCardStyle()` - Statistics displays
+
+### Design System Usage Patterns
+
+**Colors**:
+```swift
+Text("Hello")
+    .foregroundColor(.primaryDeep)  // ✅ Semantic
+    .background(.surfaceColor)      // ✅ Semantic
+
+// ❌ DON'T: Color(red: 25/255, green: 45/255, blue: 155/255)
+```
+
+**Typography**:
+```swift
+Text("Book Title")
+    .font(.bookTitle)         // ✅ Semantic
+Text("Chapter 5")
+    .font(.bodyMedium)        // ✅ Semantic
+
+// ❌ DON'T: .font(.system(size: 18, weight: .bold))
+```
+
+**Spacing**:
+```swift
+VStack(spacing: Spacing.md) {  // ✅ Using scale
+    Text("Title")
+        .padding(Spacing.lg)    // ✅ Using scale
+}
+.cardStyle()                   // ✅ Using modifier
+
+// ❌ DON'T: .padding(16) or .cornerRadius(12)
+```
+
+**Icons**:
+```swift
+Image(systemName: AppIcon.book)        // ✅ Centralized
+Image(systemName: AppIcon.checkmark)   // ✅ Centralized
+
+// ❌ DON'T: Image(systemName: "book.fill")
+```
+
+**Buttons**:
+```swift
+Button("Save") { }
+    .buttonStyle(PrimaryButtonStyle())    // ✅ Reusable style
+
+// ❌ DON'T: Inline padding, background, colors
+```
+
+### Migration Notes
+
+**Before Design System** (Old Pattern):
+```swift
+private let primaryColor = Color(red: 25/255, green: 45/255, blue: 155/255)
+
+Text(challenge.name)
+    .font(.system(size: 18, weight: .bold))
+    .foregroundColor(primaryColor)
+    .padding(16)
+    .background(Color.white)
+    .cornerRadius(12)
+    .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
+```
+
+**After Design System** (New Pattern):
+```swift
+Text(challenge.name)
+    .font(.challengeTitle)
+    .foregroundColor(.primaryDeep)
+    .cardStyle()
+```
+
+### Benefits
+- ✅ **Zero color duplication** - Primary color was hardcoded in 10+ files
+- ✅ **Consistent spacing** - 8pt grid system throughout
+- ✅ **Semantic naming** - Code is self-documenting
+- ✅ **Easy theming** - Change one value, update everywhere
+- ✅ **Dynamic Type support** - Accessibility built-in
+- ✅ **Comprehensive previews** - Design system documented visually
 
 ## Important Considerations
 

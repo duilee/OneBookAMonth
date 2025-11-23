@@ -41,7 +41,13 @@ struct ContentView: View {
                     Label("Stats", systemImage: "chart.bar")
                 }
                 .tag(2)
-            
+
+            SettingsView()
+                .tabItem {
+                    Label("Settings", systemImage: "gear")
+                }
+                .tag(3)
+
         }
         .accentColor(.blue) // Customize selected tab color
         .onChange(of: selectedTab) { oldValue, newValue in

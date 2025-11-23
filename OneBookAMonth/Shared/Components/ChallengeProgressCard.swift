@@ -13,83 +13,65 @@ struct ChallengeProgressCard: View {
     let challenge: Challenge
     let itemManager: ItemManager
     
-    // MARK: - Spacing Constants (8pt Grid System)
-    private let spacing = (
-        xs: CGFloat(4),
-        sm: CGFloat(8),
-        md: CGFloat(16),
-        lg: CGFloat(24)
-    )
-    
     var body: some View {
-        VStack(spacing: spacing.md) {
+        VStack(spacing: Spacing.md) {
             // Header with challenge name and status
             headerSection
-            
+
             // Progress information
             progressSection
-            
+
             // Weekly progress dots
             weeklyProgressSection
-            
+
             // Motivational message
             motivationalSection
         }
-        .padding(spacing.md)
-        .background(Color.white)
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
+        .cardStyle()
     }
     
     private var headerSection: some View {
         HStack {
-            HStack(spacing: spacing.sm) {
-                Text("🏆")
-                    .font(.system(size: 20))
-                
+            HStack(spacing: Spacing.xs) {
+                Text(AppIcon.trophy)
+                    .font(.headingLarge)
+
                 Text(challenge.name)
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(Color(red: 25/255, green: 45/255, blue: 155/255))
+                    .font(.challengeTitle)
+                    .foregroundColor(.primaryDeep)
             }
-            
+
             Spacer()
-            
+
             challengeStatusBadge
         }
     }
     
     private var challengeStatusBadge: some View {
         let status = getChallengeStatus()
-        
+
         return Text(status.text)
-            .font(.system(size: 12, weight: .semibold))
-            .padding(.horizontal, spacing.sm)
-            .padding(.vertical, spacing.xs)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(red: status.color.red, green: status.color.green, blue: status.color.blue).opacity(0.15))
-            )
-            .foregroundColor(Color(red: status.color.red, green: status.color.green, blue: status.color.blue))
+            .badgeStyle(color: status.color)
     }
     
     private var progressSection: some View {
         let daysWithReading = getDaysWithReading()
         let progress = Double(daysWithReading) / Double(challenge.duration)
-        
-        return VStack(alignment: .leading, spacing: spacing.sm) {
+
+        return VStack(alignment: .leading, spacing: Spacing.xs) {
             // Progress text
             HStack {
                 Text("\(daysWithReading)/\(challenge.duration) days with reading")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.primary)
-                
+                    .font(.labelMedium)
+                    .foregroundColor(.textPrimary)
+
                 Spacer()
-                
+
                 Text("\(challenge.daysRemaining) days left")
-                    .font(.system(size: 14))
-                    .foregroundColor(.secondary)
+                    .font(.labelSmall)
+                    .foregroundColor(.textSecondary)
             }
-            
+
             // Progress bar
             progressBar(progress: progress)
         }
@@ -99,17 +81,17 @@ struct ChallengeProgressCard: View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
                 // Background track
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.gray.opacity(0.2))
+                RoundedRectangle(cornerRadius: CornerRadius.tiny)
+                    .fill(Color.borderColor)
                     .frame(height: 8)
-                
+
                 // Progress track
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: CornerRadius.tiny)
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color(red: 25/255, green: 45/255, blue: 155/255),
-                                Color(red: 25/255, green: 45/255, blue: 155/255).opacity(0.8)
+                                Color.primaryDeep,
+                                Color.primaryDeep.opacity(0.8)
                             ],
                             startPoint: .leading,
                             endPoint: .trailing
@@ -122,14 +104,14 @@ struct ChallengeProgressCard: View {
     }
     
     private var weeklyProgressSection: some View {
-        VStack(spacing: spacing.sm) {
+        VStack(spacing: Spacing.xs) {
             HStack {
                 Text("This week:")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.primary)
-                
+                    .font(.labelMedium)
+                    .foregroundColor(.textPrimary)
+
                 Spacer()
-                
+
                 weeklyProgressDots
             }
         }
@@ -139,26 +121,26 @@ struct ChallengeProgressCard: View {
         HStack(spacing: 6) {
             let weekProgress = getThisWeekProgress()
             let dayLabels = getDayLabels()
-            
+
             ForEach(0..<7, id: \.self) { dayIndex in
                 VStack(spacing: 2) {
                     // Day letter
                     Text(dayLabels[dayIndex])
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.secondary)
-                    
+                        .font(.labelTiny)
+                        .foregroundColor(.textSecondary)
+
                     // Progress dot
                     Circle()
-                        .fill(weekProgress[dayIndex] ? 
-                              Color(red: 25/255, green: 45/255, blue: 155/255) : 
-                              Color.gray.opacity(0.3))
+                        .fill(weekProgress[dayIndex] ?
+                              Color.primaryDeep :
+                              Color.borderColor)
                         .frame(width: 12, height: 12)
                         .overlay(
                             Circle()
                                 .stroke(
-                                    dayIndex == getCurrentDayOfWeek() ? 
-                                    Color(red: 25/255, green: 45/255, blue: 155/255) : 
-                                    Color.clear, 
+                                    dayIndex == getCurrentDayOfWeek() ?
+                                    Color.primaryDeep :
+                                    Color.clear,
                                     lineWidth: 2
                                 )
                                 .frame(width: 16, height: 16)
@@ -170,21 +152,21 @@ struct ChallengeProgressCard: View {
     
     private var motivationalSection: some View {
         let message = getMotivationalMessage()
-        
-        return HStack(spacing: spacing.sm) {
+
+        return HStack(spacing: Spacing.xs) {
             Text(message.emoji)
-                .font(.system(size: 14))
-            
+                .font(.labelMedium)
+
             Text(message.text)
-                .font(.system(size: 13, weight: .medium))
+                .font(.labelSmall)
                 .foregroundColor(message.color)
-            
+
             Spacer()
         }
-        .padding(.horizontal, spacing.sm)
-        .padding(.vertical, spacing.sm)
+        .padding(.horizontal, Spacing.xs)
+        .padding(.vertical, Spacing.xs)
         .background(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: CornerRadius.small)
                 .fill(message.backgroundColor.opacity(0.1))
         )
     }
@@ -207,20 +189,20 @@ struct ChallengeProgressCard: View {
         return labels
     }
     
-    private func getChallengeStatus() -> (text: String, color: (red: Double, green: Double, blue: Double)) {
+    private func getChallengeStatus() -> (text: String, color: Color) {
         let daysWithReading = getDaysWithReading()
         let expectedDays = Int(Double(challenge.daysElapsed) * 0.7) // Aim for 70% of days
-        
+
         if challenge.daysRemaining <= 0 {
-            return ("Completed", (red: 0.0, green: 0.6, blue: 0.0))
+            return ("Completed", .statusCompleted)
         } else if daysWithReading >= expectedDays {
-            return ("On Track", (red: 25/255, green: 45/255, blue: 155/255))
+            return ("On Track", .statusActive)
         } else {
             let daysBehind = expectedDays - daysWithReading
             if daysBehind >= 3 {
-                return ("At Risk", (red: 0.8, green: 0.2, blue: 0.2))
+                return ("At Risk", .statusFailed)
             } else {
-                return ("Behind", (red: 1.0, green: 0.6, blue: 0.0))
+                return ("Behind", .statusPending)
             }
         }
     }
@@ -284,31 +266,31 @@ struct ChallengeProgressCard: View {
         let daysSinceLastRead = getDaysSinceLastRead()
         let daysWithReading = getDaysWithReading()
         let expectedDays = Int(Double(challenge.daysElapsed) * 0.7)
-        
+
         // Just read today
         if daysSinceLastRead == 0 {
             if item.getPagesReadForDate(Date()) > 0 {
-                return ("Great work today!", .green, "🌟", .green)
+                return ("Great work today!", .successGreen, "🌟", .successGreen)
             }
         }
-        
+
         // Behind on challenge
         if daysWithReading < expectedDays {
             let daysBehind = expectedDays - daysWithReading
             if daysBehind >= 3 {
-                return ("Challenge at risk! Time to catch up", .red, "⚠️", .red)
+                return ("Challenge at risk! Time to catch up", .errorRed, "⚠️", .errorRed)
             } else {
-                return ("A bit behind - you can do this!", .orange, "💪", .orange)
+                return ("A bit behind - you can do this!", .warningOrange, "💪", .warningOrange)
             }
         }
-        
+
         // Haven't read recently
         if daysSinceLastRead >= 2 {
-            return ("Haven't read in \(daysSinceLastRead) days", .orange, "📚", .orange)
+            return ("Haven't read in \(daysSinceLastRead) days", .warningOrange, "📚", .warningOrange)
         }
-        
+
         // On track
-        return ("You're doing great!", Color(red: 25/255, green: 45/255, blue: 155/255), "🎯", Color(red: 25/255, green: 45/255, blue: 155/255))
+        return ("You're doing great!", .primaryDeep, "🎯", .primaryDeep)
     }
     
     private func getDaysSinceLastRead() -> Int {

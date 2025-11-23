@@ -32,14 +32,12 @@ func getOpacity(for count: Int) -> Double {
 
 // Calculate Color based on count
 func getColor(for count: Int) -> Color {
-    let colorPalette = ColorPalette()
-    
     if count >= 3 {
-        return colorPalette.deep
+        return .primaryDeep
     } else if count >= 2 {
-        return colorPalette.medium
+        return .primaryMedium
     } else {
-        return colorPalette.light
+        return .primaryLight
     }
 }
 
